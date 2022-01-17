@@ -6,12 +6,19 @@
 
 typedef unsigned int uint;
 
+/*
+CONVENTION:
+    1
+   4#2
+    3
 
+
+*/
 
 typedef struct tile {
     char up, down, left, right, center; 
     uint roads[4]; // []
-    unsigned short meeple; // 0000 0000 0000 0000
+    bool meeple[9]; // sides + corners + middle
     bool closed_up, closed_down, closed_left, closed_right; // 
 } tile;
 
@@ -30,8 +37,10 @@ void rotate_tile_clockwise(tile* t) { // untested
             t->roads[i]++;
     
     t->meeple << 1;
-    if (t->meeple & 0b0000001000000000)
-        t->meeple | 
+    if (t->meeple & ) {
+        t->meeple |= 0b0000001000000000;
+        t->meeple |= 0b0000000000000001;
+    }
 
 } 
 
