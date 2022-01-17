@@ -7,18 +7,26 @@
 typedef unsigned int uint;
 
 /*
-CONVENTION:
+CONVENTION FOR TILE SIDE NUMBERING:
     1
    4#2
     3
 
+START UP
+INCREMENT CLOCKWISE
 
+* for corners start at the top right corner
+eg: 
+
+   4 1
+    #
+   3 2
 */
 
 typedef struct tile {
     char up, down, left, right, center; 
     uint roads[4]; // []
-    bool meeple[9]; // sides + corners + middle
+    bool meeple[9]; // sides(0-3) + corners(4-7) + middle(8)
     bool closed_up, closed_down, closed_left, closed_right; // 
 } tile;
 
