@@ -161,6 +161,8 @@ void basic_print_grid(grid G){
 
 int main() {
     srand(time(NULL));
+
+    
     grid g = Grid();
     for(int i = 0; i < N_CARDS * 2; i++) {
         for (int j = 0; j < N_CARDS * 2; j++) {
