@@ -11,13 +11,17 @@ typedef struct tile_t {
 } tile;
 
 
-tile*** Grid();
+tile*** Grid(); // fait // non testée
 
-void rotate_tile_clockwise(tile*);
+void rotate_tile_clockwise(tile*); // fait // non testée
 
-void rotate_tile_counter_clockwise(tile*);
+void rotate_tile_counter_clockwise(tile*); // fait // non testée
 
-tile* Tile();
+tile* Tile(); // fait // non testée
+
+void free_grid(tile***); // à faire
+
+void free_tile(tile*); // à faire
 
 
 
