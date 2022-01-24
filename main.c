@@ -93,6 +93,72 @@ void free_grid(grid g){
     free(g);      // nécéssaire
 }
 
+int empty_grid_row(grid G, int row){
+    int i;
+    
+    for(i = 0; i < N_CARDS; i++)
+        if(G[row][i] != NULL)
+            return 0;
+    
+    return 1;
+}
+
+int empty_grid_col(grid G, int col){
+    int i;
+    
+    for(i = 0; i < N_CARDS; i++)
+        if(G[i][col] != NULL)
+            return 0;
+    
+    return 1;
+}
+
+void basic_print_grid(grid G){
+    
+    int i = 0, 
+        j = 0, 
+        firstcol = 0,
+        lenght   = N_CARDS*2;
+    
+    for(i = 0; i < lenght; i++){
+        if(empty_grid_col(G, i) == 1)
+            firstcol ++;
+    }
+    
+    for(i = 0; i < lenght; i++){
+        
+        if(empty_grid_row(G, i) == 0){
+            for(j = firstcol; j < lenght; j++){
+                if(G[i][j] != NULL)
+                    printf(" %c", G[i][j]->sides[0]);
+                
+                else
+                    printf("   ");
+            }
+            printf("\n");
+            
+            for(j = firstcol; j < lenght; j++){
+                if(G[i][j] != NULL)
+                    printf("%c%c%c", G[i][j]->sides[3], G[i][j]->sides[4], G[i][j]->sides[1]);
+                
+                else
+                    printf("   ");
+            }
+            printf("\n");
+            
+            for(j = firstcol; j < lenght; j++){
+                if(G[i][j] != NULL)
+                    printf(" %c", G[i][j]->sides[2]);
+            
+                else
+                    printf("   ");
+            }
+            printf("\n");
+        }    
+    }
+}
+
+
 int main() {
     srand(time(NULL));
     grid g = Grid();
@@ -103,10 +169,7 @@ int main() {
     }
 
 
+    basic_print_grid(g);
 
     free_grid(g);
-
-    
-
-    
 }
