@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #define JOUEURS 2
+#define N_CARDS 72
 
 
 typedef unsigned int uint;
@@ -24,7 +25,7 @@ eg:
 */
 
 
-typedef struct tile {
+typedef struct tile_t {
     char sides[5]; // C = Champ, V = Ville, C = Champs, M = Monastère 
     uint meeple;
     bool special;
@@ -32,7 +33,16 @@ typedef struct tile {
 } tile;
 
 
-
+tile*** Grid() {
+    tile*** l = malloc(sizeof(tile**) * N_CARDS * 2);
+    for (int i = 0; i < N_CARDS * 2; i++) {
+        l[i] = malloc(sizeof(tile*) * N_CARDS * 2);
+        for (int j = 0; j < N_CARDS * 2; j++) {
+            l[i][j] = NULL;
+        }
+    }
+    return l;
+}
 
 
 void rotate_tile_clockwise(tile* t) { // untested 
@@ -75,6 +85,9 @@ tile* Tile()
 }
 
 int main() {
+    tile*** grid = Grid();
 
+    int a;
+    scanf("%d", &a);
     return 0;
 }
