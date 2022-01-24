@@ -32,10 +32,10 @@ int empty_grid_row(grid, int); // a faire [Arthur C]
 
 void basic_print_grid(grid); // à faire [Arthur C]
 
-void add_tile_to_grid(grid, tile*); // à faire
+//void add_tile_to_grid(grid, tile*); // pas nécassaire 
 
-tile** deck_shuffle(tile**); // à faire
+tile** deck_shuffle(tile**); // à faire [Samy]
 
-tile** readcsv(char*); // à faire
+tile** readcsv(char*); // à faire [Samy]
 
 
