@@ -30,6 +30,6 @@ void add_tile_to_grid(grid, tile*); // à faire
 
 tile** deck_shuffle(tile**); // à faire
 
-tile** readcsv(char*) // à faire
+tile** readcsv(char*); // à faire
 
 
