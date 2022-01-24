@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 #include "f_names.h"
 
 
-#define JOUEURS 2
-#define N_CARDS 72
+
 
 
 typedef unsigned int uint;
@@ -28,25 +28,19 @@ eg:
 */
 
 
-typedef struct tile_t {
-    char sides[5]; // C = Champ, V = Ville, C = Champs, M = Monastère 
-    uint meeple;
-    bool special;
-    bool closed[4];
-} tile;
 
 
-tile*** Grid() {
-    tile*** l = malloc(sizeof(tile**) * N_CARDS * 2 + 1);
+
+grid Grid() {
+    grid l = malloc(sizeof(tile**) * N_CARDS * 2);
     for (int i = 0; i < N_CARDS * 2; i++) {
-        l[i] = malloc(sizeof(tile*) * N_CARDS * 2 + 1);
+        l[i] = malloc(sizeof(tile*) * N_CARDS * 2);
         for (int j = 0; j < N_CARDS * 2; j++) {
             l[i][j] = NULL;
         }
     }
     return l;
 }
-
 
 
 void rotate_tile_clockwise(tile* t) { // untested 
@@ -57,7 +51,7 @@ void rotate_tile_clockwise(tile* t) { // untested
     t->sides[1] = tmp;
 } 
 
-void rotate_tile_counter_clockwise(tile* t) { // untested
+void rotate_tile_counterclockwise(tile* t) { // untested
     char tmp = t->sides[0];
     t->sides[0] = t->sides[1];
     t->sides[1] = t->sides[2];
@@ -67,6 +61,7 @@ void rotate_tile_counter_clockwise(tile* t) { // untested
 
 tile* Tile()
 {
+    srand(time(NULL));
     tile* T = malloc(sizeof(tile));
     if (!T) {
         perror("Error while allocating tile");
@@ -88,10 +83,29 @@ tile* Tile()
     return T;
 }
 
-int main() {
-    tile*** grid = Grid();
+void free_grid(grid g){
+    int i,j;
+    for(i=0;i<N_CARDS*2;i++){
+        for(j=0;j<N_CARDS*2;j++)
+            free(g[i][j]);
+        free(g[i]);
+    }
+    free(g);      // nécéssaire
+}
 
-    int a;
-    scanf("%d", &a);
-    return 0;
+int main() {
+    grid g = Grid();
+    for(int i = 0; i < N_CARDS * 2; i++) {
+        for (int j = 0; j < N_CARDS * 2; j++) {
+            g[i][j] = Tile();
+        }
+    }
+
+
+
+    free_grid(g);
+
+    
+
+    
 }
