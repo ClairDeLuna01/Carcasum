@@ -10,8 +10,9 @@ typedef struct tile_t {
     bool closed[4];
 } tile;
 
+typedef tile*** grid;
 
-tile*** Grid(); // fait // non testée
+grid Grid(); // fait // non testée
 
 void rotate_tile_clockwise(tile*); // fait // non testée
 
@@ -19,10 +20,16 @@ void rotate_tile_counter_clockwise(tile*); // fait // non testée
 
 tile* Tile(); // fait // non testée
 
-void free_grid(tile***); // à faire
+void free_grid(grid); // à faire
 
 void free_tile(tile*); // à faire
 
+void basic_print_grid(grid); // à faire
 
+void add_tile_to_grid(grid, tile*); // à faire
+
+tile** deck_shuffle(tile**); // à faire
+
+tile** readcsv(char*) // à faire
 
 
