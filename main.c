@@ -61,7 +61,7 @@ void rotate_tile_counterclockwise(tile* t) { // untested
 
 tile* Tile()
 {
-    srand(time(NULL));
+    
     tile* T = malloc(sizeof(tile));
     if (!T) {
         perror("Error while allocating tile");
@@ -94,6 +94,7 @@ void free_grid(grid g){
 }
 
 int main() {
+    srand(time(NULL));
     grid g = Grid();
     for(int i = 0; i < N_CARDS * 2; i++) {
         for (int j = 0; j < N_CARDS * 2; j++) {
