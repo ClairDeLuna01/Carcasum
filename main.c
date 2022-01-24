@@ -8,7 +8,7 @@
 typedef unsigned int uint;
 
 /*
-CONVENTION FOR TILE SIDE NUMBERING:
+CONVENTION FOR TILE SIDE NUMBERING pog :
     1
    4#2
     3
