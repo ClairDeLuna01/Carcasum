@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define N_CARDS 72
+#define players 2
 
 typedef struct tile_t {
     char sides[5]; // C = Champ, V = Ville, C = Champs, M = Monastère 
@@ -12,17 +14,17 @@ typedef struct tile_t {
 
 typedef tile*** grid;
 
-grid Grid(); // fait // non testée
+grid Grid(); // fait
 
-void rotate_tile_clockwise(tile*); // fait // non testée
+void rotate_tile_clockwise(tile*); // fait 
 
-void rotate_tile_counter_clockwise(tile*); // fait // non testée
+void rotate_tile_counterclockwise(tile*); // fait 
 
-tile* Tile(); // fait // non testée
+tile* Tile(); // fait
 
-void free_grid(grid); // à faire
+void free_grid(grid); // fait
 
-void free_tile(tile*); // à faire
+//void free_tile(tile*); // pas nécassaire 
 
 int empty_grid_col(grid, int); // a faire [Arthur C]
 
@@ -34,6 +36,6 @@ void add_tile_to_grid(grid, tile*); // à faire
 
 tile** deck_shuffle(tile**); // à faire
 
-tile** readcsv(char*) // à faire
+tile** readcsv(char*); // à faire
 
 
