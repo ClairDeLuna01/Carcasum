@@ -34,15 +34,16 @@ typedef struct tile_t {
 
 
 tile*** Grid() {
-    tile*** l = malloc(sizeof(tile**) * N_CARDS * 2);
+    tile*** l = malloc(sizeof(tile**) * N_CARDS * 2 + 1);
     for (int i = 0; i < N_CARDS * 2; i++) {
-        l[i] = malloc(sizeof(tile*) * N_CARDS * 2);
+        l[i] = malloc(sizeof(tile*) * N_CARDS * 2 + 1);
         for (int j = 0; j < N_CARDS * 2; j++) {
             l[i][j] = NULL;
         }
     }
     return l;
 }
+
 
 
 void rotate_tile_clockwise(tile* t) { // untested 
