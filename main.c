@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "f_names.h"
+
+
 #define JOUEURS 2
 #define N_CARDS 72
 
@@ -8,7 +11,7 @@
 typedef unsigned int uint;
 
 /*
-CONVENTION FOR TILE SIDE NUMBERING pog :
+CONVENTION FOR TILE SIDE NUMBERING:
     1
    4#2
     3
