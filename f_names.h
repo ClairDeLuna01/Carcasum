@@ -26,6 +26,10 @@ void free_grid(grid); // fait
 
 //void free_tile(tile*); // pas nécassaire 
 
+int empty_grid_col(grid, int); // a faire
+
+int empty_grid_row(grid, int); // a faire
+
 void basic_print_grid(grid); // à faire
 
 void add_tile_to_grid(grid, tile*); // à faire

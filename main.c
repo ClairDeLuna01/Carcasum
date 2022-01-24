@@ -12,9 +12,9 @@ typedef unsigned int uint;
 
 /*
 CONVENTION FOR TILE SIDE NUMBERING:
-    1
-   4#2
-    3
+    0
+   341
+    2
 
 START UP
 INCREMENT CLOCKWISE
