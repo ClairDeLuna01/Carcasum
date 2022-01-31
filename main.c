@@ -8,8 +8,6 @@
 
 
 
-typedef unsigned int uint;
-
 /*
 CONVENTION FOR TILE SIDE NUMBERING:
     0
@@ -96,7 +94,7 @@ void free_grid(grid g){
 int empty_grid_row(grid G, int row){
     int i;
     
-    for(i = 0; i < N_CARDS; i++)
+    for(i = 0; i < N_CARDS*2; i++)
         if(G[row][i] != NULL)
             return 0;
     
@@ -106,7 +104,9 @@ int empty_grid_row(grid G, int row){
 int empty_grid_col(grid G, int col){
     int i;
     
-    for(i = 0; i < N_CARDS; i++)
+    //return 0;
+    
+    for(i = 0; i < N_CARDS*2; i++)
         if(G[i][col] != NULL)
             return 0;
     
@@ -118,45 +118,55 @@ void basic_print_grid(grid G){
     int i = 0, 
         j = 0, 
         firstcol = 0,
+        lastcol  = N_CARDS*2,
         lenght   = N_CARDS*2;
     
-    for(i = 0; i < lenght; i++){
-        if(empty_grid_col(G, i) == 1)
-            firstcol ++;
+    while(empty_grid_col(G, i) == 1){
+        firstcol ++;
+        i++;
     }
+    
+    i = lenght;
+    
+    while(empty_grid_col(G, i) == 1){
+        lastcol--;
+        i--;
+    }
+    
     
     for(i = 0; i < lenght; i++){
         
         if(empty_grid_row(G, i) == 0){
-            for(j = firstcol; j < lenght; j++){
+            for(j = firstcol; j < lastcol; j++){
                 if(G[i][j] != NULL)
-                    printf(" %c", G[i][j]->sides[0]);
+                    printf("  %c  ", G[i][j]->sides[0]);
                 
                 else
-                    printf("   ");
+                    printf("     ");
             }
             printf("\n");
             
-            for(j = firstcol; j < lenght; j++){
+            for(j = firstcol; j < lastcol; j++){
                 if(G[i][j] != NULL)
-                    printf("%c%c%c", G[i][j]->sides[3], G[i][j]->sides[4], G[i][j]->sides[1]);
+                    printf(" %c%c%c ", G[i][j]->sides[3], G[i][j]->sides[4], G[i][j]->sides[1]);
                 
                 else
-                    printf("   ");
+                    printf("     ");
             }
             printf("\n");
             
-            for(j = firstcol; j < lenght; j++){
+            for(j = firstcol; j < lastcol; j++){
                 if(G[i][j] != NULL)
-                    printf(" %c", G[i][j]->sides[2]);
+                    printf("  %c  ", G[i][j]->sides[2]);
             
                 else
-                    printf("   ");
+                    printf("     ");
             }
-            printf("\n");
+            printf("\n\n");
         }    
     }
 }
+
 
 
 int main() {
@@ -164,8 +174,8 @@ int main() {
 
     
     grid g = Grid();
-    for(int i = 0; i < N_CARDS * 2; i++) {
-        for (int j = 0; j < N_CARDS * 2; j++) {
+    for(int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
             g[i][j] = Tile();
         }
     }

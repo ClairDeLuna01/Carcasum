@@ -5,6 +5,8 @@
 #define N_CARDS 72
 #define players 2
 
+typedef unsigned int uint;
+
 typedef struct tile_t {
     char sides[5]; // C = Champ, V = Ville, C = Champs, M = Monastère 
     uint meeple;
