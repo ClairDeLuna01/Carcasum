@@ -169,7 +169,7 @@ void basic_print_grid(grid G){
 
 tile** readcsv(char* filename) {
     tile **deck = malloc(sizeof(tile *) * 72);
-    for (int i = 0; i <= 72; i++)
+    for (int i = 0; i <= N_CARDS; i++)
     {
         deck[i] = Tile();
     }
@@ -223,14 +223,20 @@ void print_tile(tile* t) {
     printf("%c|%c|%c|%c|%c   special: %d\n", t->sides[0], t->sides[1], t->sides[2], t->sides[3], t->sides[4], (int)t->special);
 }
 
+void free_deck(tile** deck) {
+    for (int i = 0; i < N_CARDS; i++) 
+        free(deck[i]);
+    free(deck);
+}
+
 int main() {
     srand(time(NULL));
 
     
-    grid g = Grid();
+    grid grid = Grid();
     for(int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
-            g[i][j] = Tile();
+            grid[i][j] = Tile();
         }
     }
 
@@ -243,5 +249,6 @@ int main() {
         print_tile(deck[i]);
     }
 
-    free_grid(g);
+    free_grid(grid);
+    free_deck(deck);
 }

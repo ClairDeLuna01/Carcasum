@@ -38,6 +38,6 @@ void basic_print_grid(grid); // fait
 
 tile** deck_shuffle(tile**); // à faire [Samy]
 
-tile** readcsv(char*); // à faire [Samy]
+tile** readcsv(char*); // fait
 
-
+void free_deck(tile**); // need to run valgrind
