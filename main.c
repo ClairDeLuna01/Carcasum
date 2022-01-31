@@ -167,7 +167,61 @@ void basic_print_grid(grid G){
     }
 }
 
+tile** readcsv(char* filename) {
+    tile **deck = malloc(sizeof(tile *) * 72);
+    for (int i = 0; i <= 72; i++)
+    {
+        deck[i] = Tile();
+    }
+    int i = 0, j = 0;
+    FILE *fp;
+    char c;
+    fp = fopen(filename, "r");
 
+    c = fgetc(fp);
+    deck[i]->sides[j] = c;
+    j++;
+    while (c != EOF)
+    {
+        c = fgetc(fp);
+        if (c == ',')
+        {
+            c = fgetc(fp);
+            if (c == 'a') {
+                deck[i]->special = true;
+                deck[i]->sides[j] = 'p';
+            }
+            else
+                deck[i]->sides[j] = c;
+            // printf("%c|",deck[i].sides[j]);
+
+            j++;
+        }
+        if (c == '\n')
+        {
+            // printf("%d \n",i);
+            c = fgetc(fp);
+            // printf("%c|",c);
+            i++;
+            j = 0;
+            if (c == 'a') {
+                deck[i]->special = true;
+                deck[i]->sides[j] = 'p';
+            }
+            else
+                deck[i]->sides[j] = c;
+            j++;
+        }
+    }
+
+    fclose(fp);
+
+    return deck;
+}
+
+void print_tile(tile* t) {
+    printf("%c|%c|%c|%c|%c   special: %d\n", t->sides[0], t->sides[1], t->sides[2], t->sides[3], t->sides[4], (int)t->special);
+}
 
 int main() {
     srand(time(NULL));
@@ -181,7 +235,13 @@ int main() {
     }
 
 
-    basic_print_grid(g);
+    //basic_print_grid(g);
+
+    tile** deck = readcsv("tuiles_base_simplifiees.csv");
+
+    for (int i = 0; i < 72; i++) {
+        print_tile(deck[i]);
+    }
 
     free_grid(g);
 }
