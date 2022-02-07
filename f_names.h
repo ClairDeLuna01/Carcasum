@@ -14,6 +14,12 @@ typedef struct tile_t {
     bool closed[4];
 } tile;
 
+typedef struct joueur_t {
+    uint points;
+    uint meeples;
+    uint id;
+} joueur;
+
 typedef tile*** grid;
 
 grid Grid(); // fait 
@@ -40,7 +46,4 @@ tile** deck_shuffle(tile**); // à faire [Samy]
 
 tile** readcsv(char*); // fait
 
-void free_deck(tile**); // need to run valgrind
-
-
-
+void free_deck(tile**); // fait
