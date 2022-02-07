@@ -40,4 +40,4 @@ tile** deck_shuffle(tile**); // à faire [Samy]
 
 tile** readcsv(char*); // fait
 
-void free_deck(tile**); // need to run valgrind
+void free_deck(tile**); // fait
