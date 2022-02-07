@@ -22,7 +22,7 @@ typedef struct joueur_t {
 
 typedef tile*** grid;
 
-grid Grid(); // fait
+grid Grid(); // fait 
 
 void rotate_tile_clockwise(tile*); // fait 
 
