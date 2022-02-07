@@ -16,7 +16,7 @@ typedef struct tile_t {
 
 typedef tile*** grid;
 
-grid Grid(); // fait
+grid Grid(); // fait 
 
 void rotate_tile_clockwise(tile*); // fait 
 
@@ -41,3 +41,6 @@ tile** deck_shuffle(tile**); // à faire [Samy]
 tile** readcsv(char*); // fait
 
 void free_deck(tile**); // need to run valgrind
+
+
+
