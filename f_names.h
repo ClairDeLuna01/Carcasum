@@ -40,6 +40,8 @@ int empty_grid_row(grid, int); // fait
 
 void basic_print_grid(grid); // fait
 
+void print_grid_color(grid); // todo AC
+
 //void add_tile_to_grid(grid, tile*); // pas nécassaire 
 
 tile** deck_shuffle(tile**); // à faire [Samy]
@@ -47,3 +49,30 @@ tile** deck_shuffle(tile**); // à faire [Samy]
 tile** readcsv(char*); // fait
 
 void free_deck(tile**); // fait
+
+joueur* Joueur(); // todo AB
+
+void free_joueur(); // 
+
+int** get_all_available_positions(grid); //
+
+bool is_valid_pos(grid, tile*, int, int);
+
+int** get_all_possible_possitions(grid, tile*); //
+
+void print_grid_with_pos(grid, int**, tile*); //
+
+void place_tile(grid, int, int, tile); //
+
+bool check_road(grid, int, int); //
+
+bool check_town(grid, int, int); //
+
+bool check_abbey(grid, int, int); //
+
+uint get_road_points(grid, int, int); //
+
+uint get_town_points(grid, int, int); //
+
+uint get_plain_points(grid, int, int); //
+
