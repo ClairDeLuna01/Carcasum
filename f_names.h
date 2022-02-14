@@ -20,6 +20,10 @@ typedef struct joueur_t {
     uint id;
 } joueur;
 
+typedef struct coord {
+    int x, y;
+};
+
 typedef tile*** grid;
 
 grid Grid(); // fait 
