@@ -224,7 +224,7 @@ void print_tile(tile* t) {
 }
 
 void free_deck(tile** deck) {
-    for (int i = 0; i < N_CARDS; i++) 
+    for (int i = 0; i < N_CARDS+1; i++) 
         free(deck[i]);
     free(deck);
 }
