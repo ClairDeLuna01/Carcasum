@@ -73,10 +73,10 @@ tile* Tile()
     for(; i < 4; i++)
     {
         T->closed[i] = 0; 
-        T->sides[i] = 'C';
+        T->sides[i] = 'p';
     }
     
-    T->sides[4] = 'C';
+    T->sides[4] = 'p';
     
     return T;
 }
@@ -229,6 +229,96 @@ void free_deck(tile** deck) {
     free(deck);
 }
 
+joueur* Joueur(uint id) {
+    joueur *J = malloc(sizeof(joueur));
+    J->points = 0;
+    J-> meeples = 7;
+    J-> id = id;
+
+    return J;
+}
+
+void printside(char side, bool special){
+	if(side == 'r')
+		printf("■");
+	
+	if(side == 'p' && special == 0)
+		printf("\033[0;32m■\033[0m");
+	
+	if(side == 'v')
+		printf("\033[0;31m■\033[0m");
+	
+	if(side == 'p' && special == 1)
+		printf("\033[0;36m■\033[0m");
+	
+	if(side == 'b')
+		printf("\033[0;33m■\033[0m");
+}
+
+void print_grid_color(grid G){
+    
+    int i = 0, 
+        j = 0, 
+        firstcol = 0,
+        lastcol  = N_CARDS*2 - 1,
+        lenght   = N_CARDS*2 - 1;
+    
+    while(empty_grid_col(G, i) == 1){
+        firstcol ++;
+        i++;
+    }
+    
+    i = lenght;
+    
+    while(empty_grid_col(G, i) == 1){
+        lastcol--;
+        i--;
+    }
+	
+	printf("%d %d", firstcol, lenght);
+    
+    for(i = 0; i < lenght; i++){
+        
+        if(empty_grid_row(G, i) == 0){
+            for(j = firstcol; j < lastcol; j++){
+                if(G[i][j] != NULL){
+					printside(G[i][j]->sides[0], G[i][j]->special);
+					printside(G[i][j]->sides[0], G[i][j]->special);
+					printside(G[i][j]->sides[0], G[i][j]->special);
+				}
+				
+                else
+                    printf("   ");
+            }
+            printf("\n");
+            
+            for(j = firstcol; j < lastcol; j++){
+                if(G[i][j] != NULL){
+					printside(G[i][j]->sides[3], G[i][j]->special);
+					printside(G[i][j]->sides[4], G[i][j]->special);
+					printside(G[i][j]->sides[1], G[i][j]->special);
+				}
+				
+                else
+                    printf("   ");
+            }
+            printf("\n");
+            
+            for(j = firstcol; j < lastcol; j++){
+                if(G[i][j] != NULL){
+					printside(G[i][j]->sides[2], G[i][j]->special);
+					printside(G[i][j]->sides[2], G[i][j]->special);
+					printside(G[i][j]->sides[2], G[i][j]->special);
+				}
+            
+                else
+                    printf("   ");
+            }
+            printf("\n");
+        }    
+    }
+}
+
 int main() {
     srand(time(NULL));
 
@@ -241,14 +331,22 @@ int main() {
     }
 
 
-    //basic_print_grid(g);
+
+    print_grid_color(grid);
+    //basic_print_grid(grid);
 
     tile** deck = readcsv("tuiles_base_simplifiees.csv");
 
-    for (int i = 0; i < 72; i++) {
-        print_tile(deck[i]);
-    }
+    //for (int i = 0; i < 72; i++) {
+    //    print_tile(deck[i]);
+    //}
+
+    joueur *joueur1 = Joueur(1);
+    joueur *joueur2 = Joueur(2);
 
     free_grid(grid);
     free_deck(deck);
+
+    free(joueur1);
+    free(joueur2);
 }

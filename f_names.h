@@ -44,21 +44,19 @@ void print_grid_color(grid); // todo AC
 
 //void add_tile_to_grid(grid, tile*); // pas nécassaire 
 
-tile** deck_shuffle(tile**); // à faire [Samy]
+tile** deck_shuffle(tile**); // fait
 
 tile** readcsv(char*); // fait
 
 void free_deck(tile**); // fait
 
-joueur* Joueur(); // todo AB
+joueur* Joueur(uint id); // todo AB
 
-void free_joueur(); // 
+int** get_all_available_positions(grid); // todo samy
 
-int** get_all_available_positions(grid); //
+bool is_valid_pos(grid, tile*, int, int); // 
 
-bool is_valid_pos(grid, tile*, int, int);
-
-int** get_all_possible_possitions(grid, tile*); //
+int** get_all_possible_possitions(grid, tile*); // 
 
 void print_grid_with_pos(grid, int**, tile*); //
 
