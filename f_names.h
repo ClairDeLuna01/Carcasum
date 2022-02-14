@@ -58,23 +58,23 @@ joueur* Joueur(uint id); // todo AB
 
 coord* get_all_available_positions(grid); // todo samy
 
-bool is_valid_pos(grid, tile*, int, int); // 
+bool is_valid_pos(grid, tile*, coord); // 
 
 coord* get_all_possible_possitions(grid, tile*); // 
 
-void print_grid_with_pos(grid, int**, tile*); //
+void print_grid_with_pos(grid, coord*, tile*); //
 
-void place_tile(grid, int, int, tile); //
+void place_tile(grid, coord, tile); //
 
-bool check_road(grid, int, int); //
+bool check_road(grid, coord); //
 
-bool check_town(grid, int, int); //
+bool check_town(grid, coord); //
 
-bool check_abbey(grid, int, int); //
+bool check_abbey(grid, coord); //
 
-uint get_road_points(grid, int, int); //
+uint get_road_points(grid, coord); //
 
-uint get_town_points(grid, int, int); //
+uint get_town_points(grid, coord); //
 
-uint get_plain_points(grid, int, int); //
+uint get_plain_points(grid, coord); //
 
