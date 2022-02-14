@@ -20,9 +20,9 @@ typedef struct joueur_t {
     uint id;
 } joueur;
 
-typedef struct coord {
+typedef struct coord_t {
     int x, y;
-};
+} coord;
 
 typedef tile*** grid;
 
@@ -56,11 +56,11 @@ void free_deck(tile**); // fait
 
 joueur* Joueur(uint id); // todo AB
 
-int** get_all_available_positions(grid); // todo samy
+coord* get_all_available_positions(grid); // todo samy
 
 bool is_valid_pos(grid, tile*, int, int); // 
 
-int** get_all_possible_possitions(grid, tile*); // 
+coord* get_all_possible_possitions(grid, tile*); // 
 
 void print_grid_with_pos(grid, int**, tile*); //
 
