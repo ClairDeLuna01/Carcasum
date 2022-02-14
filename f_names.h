@@ -54,11 +54,13 @@ tile** readcsv(char*); // fait
 
 void free_deck(tile**); // fait
 
-joueur* Joueur(uint id); // todo AB
+joueur* Joueur(uint id); // fait
 
-coord* get_all_available_positions(grid); // todo samy
+coord* get_all_available_positions(grid, uint* size); // todo samy
 
-bool is_valid_pos(grid, tile*, coord); // 
+bool is_valid_pos(grid, tile*, coord); // todo AC 
+
+grid create_test_grid(); // todo AB
 
 coord* get_all_possible_possitions(grid, tile*); // 
 
@@ -66,7 +68,7 @@ void print_grid_with_pos(grid, coord*, tile*); //
 
 void place_tile(grid, coord, tile); //
 
-bool check_road(grid, coord); //
+bool check_road(grid, coord); // todo AB
 
 bool check_town(grid, coord); //
 
