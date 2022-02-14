@@ -191,14 +191,6 @@ tile** readcsv(char* filename) {
                 deck[i]->special = true;
                 deck[i]->sides[j] = 'p';
             }
-            else if (c == 'v') {
-                fseek(fp, 3, SEEK_CUR);
-                if (fgetc(fp) == 'e')
-                    deck[i]->sides[j] = 'v';
-                else 
-                    deck[i]->sides[j] = 'V';
-                
-            }
             else
                 deck[i]->sides[j] = c;
             // printf("%c|",deck[i].sides[j]);
