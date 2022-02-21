@@ -237,22 +237,6 @@ joueur* Joueur(uint id) {
     return J;
 }
 
-void printside(char side, bool special){
-	if(side == 'r')
-		printf("■");
-	
-	if(side == 'p' && special == 0)
-		printf("\033[0;32m■\033[0m");
-	
-	if(side == 'v')
-		printf("\033[0;31m■\033[0m");
-	
-	if(side == 'p' && special == 1)
-		printf("\033[0;36m■\033[0m");
-	
-	if(side == 'b')
-		printf("\033[0;33m■\033[0m");
-}
 
 void printside(char side, bool special){
 	
