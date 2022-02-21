@@ -84,8 +84,9 @@ tile* Tile()
 void free_grid(grid g){
     int i,j;
     for(i=0;i<N_CARDS*2;i++){
-        for(j=0;j<N_CARDS*2;j++)
+        for(j=0;j<N_CARDS*2;j++) {
             free(g[i][j]);
+        }
         free(g[i]);
     }
     free(g);      // nécéssaire
@@ -223,8 +224,9 @@ void print_tile(tile* t) {
 }
 
 void free_deck(tile** deck) {
-    for (int i = 0; i < N_CARDS+1; i++) 
+    for (int i = 0; i < N_CARDS+1; i++) {
         free(deck[i]);
+    }
     free(deck);
 }
 
@@ -394,7 +396,6 @@ void gen_rand_valid_grill(grid grid, tile **deck){
     int try,
         maxtry = 32000,
         k;
-    bool used[N_CARDS] = {0};
     srand(time(NULL));
    
     for(int i = 0; i < 7; i++){
@@ -402,7 +403,7 @@ void gen_rand_valid_grill(grid grid, tile **deck){
             
             do
                 k = rand()%N_CARDS;
-            while(used[k = rand()%N_CARDS] == 1);
+            while(deck[k] == NULL);
             
             c.x = j;
             c.y = i;
@@ -412,7 +413,7 @@ void gen_rand_valid_grill(grid grid, tile **deck){
             {
                 while(try < maxtry && is_valid_pos(grid, deck[k], c) != 1)
                 {
-                    while(used[k] == 1)
+                    while(deck[k] == NULL)
                         k = rand()%N_CARDS;
                     
                     rotate_tile_clockwise(deck[k]);
@@ -422,8 +423,8 @@ void gen_rand_valid_grill(grid grid, tile **deck){
                 
                 if(try < maxtry)
                 {
-                    used[k] = 1;
                     grid[i][j] = deck[k];
+                    deck[k] = NULL;
                 }
             }
         }
@@ -436,19 +437,14 @@ int main() {
 
     
     grid grid = Grid();
-    for(int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            grid[i][j] = Tile();
-        }
-    }
 
 
-
-    print_grid_color(grid);
     //basic_print_grid(grid);
 
     tile** deck = readcsv("tuiles_base_simplifiees.csv");
 
+    gen_rand_valid_grill(grid, deck);
+    print_grid_color(grid);
     //for (int i = 0; i < 72; i++) {
     //    print_tile(deck[i]);
     //}
@@ -458,6 +454,8 @@ int main() {
 
     free_grid(grid);
     free_deck(deck);
+
+
 
     free(joueur1);
     free(joueur2);
