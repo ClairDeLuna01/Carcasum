@@ -56,11 +56,11 @@ void free_deck(tile**); // fait
 
 joueur* Joueur(uint id); // fait
 
+void gen_rand_valid_grill(grid, tile**); // fait
+
 coord* get_all_available_positions(grid, uint* size); // todo samy
 
 bool is_valid_pos(grid, tile*, coord); // todo AC 
-
-grid create_test_grid(); // todo AB
 
 coord* get_all_possible_possitions(grid, tile*); // 
 
