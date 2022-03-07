@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS = -Wall -Werror
+CFLAGS = -Wall -Werror -lm
 EXEC = carcassone
 
 .PHONY: clean

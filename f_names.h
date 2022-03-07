@@ -8,10 +8,11 @@
 typedef unsigned int uint;
 
 typedef struct tile_t {
-    char sides[5]; // C = Champ, V = Ville, C = Champs, M = Monastère 
-    uint meeple;
+    char sides[5]; // c = Champ, V = Ville, c = Champs, m = Monastère, v = Village, B = blazon
+    uint meeple[5];
     bool special;
     bool closed[4];
+    bool istemp;
 } tile;
 
 typedef struct joueur_t {
@@ -64,15 +65,15 @@ bool is_valid_pos(grid, tile*, coord); // todo AC
 
 coord* get_all_possible_possitions(grid, tile*); // 
 
-void print_grid_with_pos(grid, coord*, tile*); //
+void print_grid_with_pos(grid, coord*, tile*, uint size); //
 
 void place_tile(grid, coord, tile); //
 
-bool check_road(grid, coord); // todo AB
+bool check_road(grid, coord, joueur*); // todo AB
 
-bool check_town(grid, coord); //
+bool check_town(grid, coord, joueur*); //
 
-bool check_abbey(grid, coord); //
+bool check_abbey(grid, coord, joueur*); //
 
 uint get_road_points(grid, coord); //
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <math.h>
 #include "f_names.h"
 
 
@@ -65,7 +66,8 @@ tile* Tile()
         perror("Error while allocating tile");
         exit(1);
     }
-    T->meeple  = 0;
+    for (int i = 0; i < 5; i++)
+        T->meeple[i]  = 0;
     T->special = 0;
     
     int i = 0;
@@ -77,7 +79,7 @@ tile* Tile()
     }
     
     T->sides[4] = 'p';
-    
+    T->istemp = false;
     return T;
 }
 
@@ -239,8 +241,7 @@ joueur* Joueur(uint id) {
     return J;
 }
 
-
-void printside(char side, bool special){
+void printside(char side, bool special, bool istemp, uint *nbpostmp){
 	
 	// routes  : blanc
 	// près    : vert
@@ -248,6 +249,8 @@ void printside(char side, bool special){
 	// abbaye  : cyan
 	// blason  : jaune
 	// village : violet
+	
+	if(istemp == 0){
 	
 	if(side == 'r'){
 		printf("■");
@@ -272,6 +275,65 @@ void printside(char side, bool special){
 	if(side == 'v'){
 		printf("\033[0;35m■\033[0m");
 		return;}
+	}
+	
+	if(nbpostmp == NULL){
+	
+	if(side == 'r'){
+		printf("▢");
+		return;}
+	
+	if(side == 'p' && special != 1){
+		printf("\033[0;32m▢\033[0m");
+		return;}
+	
+	if(side == 'V' && special != 1){
+		printf("\033[0;31m▢\033[0m");
+		return;}
+	
+	if(side == 'p' && special == 1){
+		printf("\033[0;36m▢\033[0m");
+		return;}
+	
+	if(side == 'V' && special == 1){
+		printf("\033[0;33m▢\033[0m");
+		return;}
+	
+	if(side == 'v'){
+		printf("\033[0;35m▢\033[0m");
+		return;}
+	}
+	
+	if(nbpostmp != NULL){
+	
+	(*nbpostmp) ++;
+	
+	char c = (*nbpostmp) + 64;
+	
+	if(side == 'r'){
+		printf("%c", c);
+		return;}
+	
+	if(side == 'p' && special != 1){
+		printf("\033[0;32m%c\033[0m", c);
+		return;}
+	
+	if(side == 'V' && special != 1){
+		printf("\033[0;31m%c\033[0m", c);
+		return;}
+	
+	if(side == 'p' && special == 1){
+		printf("\033[0;36m%c\033[0m", c);
+		return;}
+	
+	if(side == 'V' && special == 1){
+		printf("\033[0;33m%c\033[0m", c);
+		return;}
+	
+	if(side == 'v'){
+		printf("\033[0;35m%c\033[0m", c);
+		return;}
+	}
 	
 	printf("%c", side);
 }
@@ -283,6 +345,8 @@ void print_grid_color(grid G){
         firstcol = 0,
         lastcol  = N_CARDS*2 - 1,
         lenght   = N_CARDS*2 - 1;
+	
+	uint nbpostmp = 0;
     
     while(empty_grid_col(G, i) == 1){
         firstcol ++;
@@ -302,7 +366,7 @@ void print_grid_color(grid G){
             for(j = firstcol; j < lastcol+1; j++){
                 if(G[i][j] != NULL){
 					printf("   ");
-					printside(G[i][j]->sides[0], G[i][j]->special);
+					printside(G[i][j]->sides[0], G[i][j]->special, G[i][j]->istemp, NULL);
 					printf("  ");
 				}
                 else
@@ -313,11 +377,11 @@ void print_grid_color(grid G){
             for(j = firstcol; j < lastcol+1; j++){
                 if(G[i][j] != NULL){
 					printf(" ");
-					printside(G[i][j]->sides[3], G[i][j]->special);
+					printside(G[i][j]->sides[3], G[i][j]->special, G[i][j]->istemp, NULL);
 					printf(" ");
-					printside(G[i][j]->sides[4], G[i][j]->special);
+					printside(G[i][j]->sides[4], G[i][j]->special, G[i][j]->istemp, &nbpostmp);
 					printf(" ");
-					printside(G[i][j]->sides[1], G[i][j]->special);
+					printside(G[i][j]->sides[1], G[i][j]->special, G[i][j]->istemp, NULL);
 				}
                 else
                     printf("      ");
@@ -327,7 +391,7 @@ void print_grid_color(grid G){
             for(j = firstcol; j < lastcol+1; j++){
                 if(G[i][j] != NULL){
 					printf("   ");
-					printside(G[i][j]->sides[2], G[i][j]->special);
+					printside(G[i][j]->sides[2], G[i][j]->special, G[i][j]->istemp, NULL);
 					printf("  ");
 				}
                 else
@@ -431,6 +495,89 @@ void gen_rand_valid_grill(grid grid, tile **deck){
     }
 }
 
+void print_grid_with_pos(grid grid, coord* coo, tile* tile, uint size)
+{
+	tile->istemp = 1;
+	
+	int i;
+	
+	for(i = 0; i < size; i++)
+		grid[coo[i].y][coo[i].x] = tile;
+	
+	print_grid_color(grid);
+	
+	for(i = 0; i < size; i++)
+		grid[coo[i].y][coo[i].x] = NULL;
+	
+	tile->istemp = 0;
+}
+
+
+bool check_road(grid g, coord c, joueur* joueurs) {
+    tile *new_tile = g[c.y][c.y]; 
+    tile *old_tile;
+    if (((old_tile = g[c.y-1][c.x])->sides[2] == 'r') && (new_tile->sides[0] == 'r')) {
+        if (old_tile->meeple[2] != 0) {
+            new_tile->meeple[0] |= old_tile->meeple[2];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->meeple[4] |= new_tile->meeple[0];
+                if (new_tile->sides[1] == 'r')
+                    new_tile->meeple[1] |= new_tile->meeple[4];
+                if (new_tile->sides[2] == 'r')
+                    new_tile->meeple[2] |= new_tile->meeple[4];
+                if (new_tile->sides[3] == 'r')
+                    new_tile->meeple[3] |= new_tile->meeple[4];
+            }
+        }
+    }
+    
+    if (((old_tile = g[c.y+1][c.x])->sides[0] == 'r') && (new_tile->sides[2] == 'r')) {
+        if (old_tile->meeple[0] != 0) {
+            new_tile->meeple[2] |= old_tile->meeple[0];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->meeple[4] |= new_tile->meeple[2];
+                if (new_tile->sides[1] == 'r')
+                    new_tile->meeple[1] |= new_tile->meeple[4];
+                if (new_tile->sides[0] == 'r')
+                    new_tile->meeple[0] |= new_tile->meeple[4];
+                if (new_tile->sides[3] == 'r')
+                    new_tile->meeple[3] |= new_tile->meeple[4];
+            }
+        }
+    }
+    
+    if (((old_tile = g[c.y][c.x-1])->sides[1] == 'r') && (new_tile->sides[3] == 'r')) {
+        if (old_tile->meeple[1] != 0) {
+            new_tile->meeple[3] = old_tile->meeple[1];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->meeple[4] |= new_tile->meeple[3];
+                if (new_tile->sides[1] == 'r')
+                    new_tile->meeple[1] |= new_tile->meeple[4];
+                if (new_tile->sides[2] == 'r')
+                    new_tile->meeple[2] |= new_tile->meeple[4];
+                if (new_tile->sides[0] == 'r')
+                    new_tile->meeple[0] |= new_tile->meeple[4];
+            }
+        }
+    }
+    
+    if (((old_tile = g[c.y][c.x+1])->sides[3] == 'r') && (new_tile->sides[1] == 'r')) {
+        if (old_tile->meeple[3] != 0) {
+            new_tile->meeple[1] = old_tile->meeple[3];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->meeple[4] |= new_tile->meeple[1];
+                if (new_tile->sides[0] == 'r')
+                    new_tile->meeple[0] |= new_tile->meeple[4];
+                if (new_tile->sides[2] == 'r')
+                    new_tile->meeple[2] |= new_tile->meeple[4];
+                if (new_tile->sides[3] == 'r')
+                    new_tile->meeple[3] |= new_tile->meeple[4];
+            }
+        }
+    }
+
+    if(new_tile->sides[4] != 'r');
+}
 
 int main() {
     srand(time(NULL));
