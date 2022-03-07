@@ -61,11 +61,11 @@ void gen_rand_valid_grill(grid, tile**); // fait
 
 coord* get_all_available_positions(grid, uint* size); // todo samy
 
-bool is_valid_pos(grid, tile*, coord); // todo AC 
+bool is_valid_pos(grid, tile*, coord); // fait
 
 coord* get_all_possible_possitions(grid, tile*); // 
 
-void print_grid_with_pos(grid, coord*, tile*, uint size); //
+void print_grid_with_pos(grid, coord*, tile*, uint size); // fait
 
 void place_tile(grid, coord, tile); //
 
