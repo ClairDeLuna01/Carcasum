@@ -513,7 +513,7 @@ void print_grid_with_pos(grid grid, coord* coo, tile* tile, uint size)
 }
 
 
-bool check_road(grid g, coord c, joueur* joueurs) {
+int* check_road(grid g, coord c, joueur* joueurs) {
     tile *new_tile = g[c.y][c.y]; 
     tile *old_tile;
     if (((old_tile = g[c.y-1][c.x])->sides[2] == 'r') && (new_tile->sides[0] == 'r')) {
@@ -576,7 +576,100 @@ bool check_road(grid g, coord c, joueur* joueurs) {
         }
     }
 
-    if(new_tile->sides[4] != 'r');
+    if (new_tile->sides[0] == 'r') {
+        if (new_tile->sides[4] != 'r') {
+            //implement rewind path
+        }
+    }
+    
+    
+}
+
+int rewind_path(uint from, coord to, grid g) {
+    if (g[to.y][to.x] == NULL) {
+        return -1;
+    }
+    if (g[to.y][to.x]->sides[4] != 'r') {
+        return 0;
+    }
+
+    if ((g[to.y][to.x]->sides[0] == 'r') && (from != 0)) {
+        coord c;
+        c.y = to.y-1;
+        c.x = to.x;
+        int v = rewind_path(2, c, g);
+        if (v == -1)
+            return -1;
+        else 
+            return v+1;
+    }
+    
+    if ((g[to.y][to.x]->sides[1] == 'r') && (from != 1)) {
+        coord c;
+        c.y = to.y;
+        c.x = to.x+1;
+        int v = rewind_path(3, c, g);
+        if (v == -1)
+            return -1;
+        else 
+            return v+1;
+    }
+    if ((g[to.y][to.x]->sides[2] == 'r') && (from != 2)) {
+        coord c;
+        c.y = to.y+1;
+        c.x = to.x;
+        int v = rewind_path(0, c, g);
+        if (v == -1)
+            return -1;
+        else 
+            return v+1;
+    }
+    if ((g[to.y][to.x]->sides[3] == 'r') && (from != 3)) {
+        coord c;
+        c.y = to.y;
+        c.x = to.x-1;
+        int v = rewind_path(1, c, g);
+        if (v == -1)
+            return -1;
+        else 
+            return v+1;
+    }
+
+    return -1;
+}
+
+coord* get_all_possible_possitions(grid grid, tile* tile){ // pas encore testée
+    
+    uint size = 0, 
+         sizevalid = 0, 
+         i;
+    
+    coord *coo = get_all_available_positions(grid, &size);
+
+    if(size == 0) {
+        printf("Error : no empty position found for tile");
+        return NULL;
+    }
+
+    uint idvalid[size];
+
+    for(i = 0; i < size; i++){
+        if(is_valid_pos(grid, tile, coo[i]) == 1)
+        {
+            idvalid[sizevalid] = i;
+            sizevalid ++;
+        }
+    }
+
+    coord *validcoo = malloc(sizevalid * sizeof(coord));
+
+    for(i = 0; i < sizevalid; i++){
+        validcoo[i] = coo[idvalid[i]];
+    }
+
+    free(coo);
+
+    return validcoo;
 }
 
 int main() {

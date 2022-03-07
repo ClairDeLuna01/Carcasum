@@ -69,11 +69,11 @@ void print_grid_with_pos(grid, coord*, tile*, uint size); // fait
 
 void place_tile(grid, coord, tile); //
 
-bool check_road(grid, coord, joueur*); // todo AB
+int* check_road(grid, coord, joueur*); // todo AB
 
-bool check_town(grid, coord, joueur*); //
+int* check_town(grid, coord, joueur*); //
 
-bool check_abbey(grid, coord, joueur*); //
+int check_abbey(grid, coord, joueur*); //
 
 uint get_road_points(grid, coord); //
 
