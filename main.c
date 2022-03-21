@@ -438,104 +438,6 @@ joueur* Joueur(uint id) {
     return J;
 }
 
-void printside(char side, bool special, bool istemp, uint *nbpostmp){
-	
-	// routes  : blanc
-	// près    : vert
-	// ville   : rouge
-	// abbaye  : cyan
-	// blason  : jaune
-	// village : violet
-	
-	if(istemp == 0){
-	
-	if(side == 'r'){
-		printf("■");
-		return;}
-	
-	if(side == 'p' && special != 1){
-		printf("\033[0;32m■\033[0m");
-		return;}
-	
-	if(side == 'V' && special != 1){
-		printf("\033[0;31m■\033[0m");
-		return;}
-	
-	if(side == 'p' && special == 1){
-		printf("\033[0;36m■\033[0m");
-		return;}
-	
-	if(side == 'V' && special == 1){
-		printf("\033[0;33m■\033[0m");
-		return;}
-	
-	if(side == 'v'){
-		printf("\033[0;35m■\033[0m");
-		return;}
-	}
-	
-	if(nbpostmp == NULL){
-	
-	if(side == 'r'){
-		printf("▢");
-		return;}
-	
-	if(side == 'p' && special != 1){
-		printf("\033[0;32m▢\033[0m");
-		return;}
-	
-	if(side == 'V' && special != 1){
-		printf("\033[0;31m▢\033[0m");
-		return;}
-	
-	if(side == 'p' && special == 1){
-		printf("\033[0;36m▢\033[0m");
-		return;}
-	
-	if(side == 'V' && special == 1){
-		printf("\033[0;33m▢\033[0m");
-		return;}
-	
-	if(side == 'v'){
-		printf("\033[0;35m▢\033[0m");
-		return;}
-	}
-	
-	if(nbpostmp != NULL){
-	
-	(*nbpostmp) ++;
-	
-	char c = (*nbpostmp) + 64;
-	
-	if(side == 'r'){
-		printf("%c", c);
-		return;}
-	
-	if(side == 'p' && special != 1){
-		printf("\033[0;32m%c\033[0m", c);
-		return;}
-	
-	if(side == 'V' && special != 1){
-		printf("\033[0;31m%c\033[0m", c);
-		return;}
-	
-	if(side == 'p' && special == 1){
-		printf("\033[0;36m%c\033[0m", c);
-		return;}
-	
-	if(side == 'V' && special == 1){
-		printf("\033[0;33m%c\033[0m", c);
-		return;}
-	
-	if(side == 'v'){
-		printf("\033[0;35m%c\033[0m", c);
-		return;}
-	}
-	
-	printf("%c", side);
-}
-
-
 bool is_valid_pos(grid grid, tile* tile, coord coord){
     
     // retourne 0 si non valide, 1 si valide
@@ -714,6 +616,11 @@ void gen_rand_game()
          randid = 0,
          player = 0;
 
+    joueur joueurs[5];
+    for (int i = 0; i < 5; i++) {
+        joueurs[i].id = i;
+    }
+
     grid[72][72] = deck[0];
     deck[0] = NULL;
 
@@ -745,7 +652,6 @@ void gen_rand_game()
         printf("\n\t===> Le joueur %d joue aléatoirement", player);
         printf("\n\t===> Entrer pour continuier");
 
-        free(coo);
         getchar();
         printf("\e[1;1H\e[2J");
 
@@ -753,10 +659,31 @@ void gen_rand_game()
 
         printf("\n\n\t===> Tuile n°%d", i);
         printf("\n\t===> Le joueur %d joue aléatoirement", player);
+        
+        bool road = false;
+        for (int i = 0; i < 4; i++) {
+            if (grid[coo[randid].y][coo[randid].x]->sides[i] == 'r')
+                road = true;
+        }
+
+        if (road) {
+            int* points = check_road(grid, coo[randid], joueurs);
+            
+            for (int i = 0; i < 5; i++) {
+                if (points[i] > 0) {
+                    printf("\n\tjoueur %d a gagner %d points", i, points[i]);
+                }
+            }
+            free(points);
+        }
+
         printf("\n\t===> Entrer pour continuier");
+
+
 
         getchar();
         printf("\e[1;1H\e[2J");
+        free(coo);
     }
 
     print_grid_color(grid);
@@ -765,100 +692,6 @@ void gen_rand_game()
     free_deck(deck);
 }
 
-
-int* check_road(grid g, coord c, joueur* joueurs) {
-    tile *new_tile = g[c.y][c.y]; 
-    tile *old_tile;
-    if (((old_tile = g[c.y-1][c.x])->sides[2] == 'r') && (new_tile->sides[0] == 'r')) {
-        if (old_tile->claimed[2] != 0) {
-            new_tile->claimed[0] |= old_tile->claimed[2];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[0];
-                if (new_tile->sides[1] == 'r')
-                    new_tile->claimed[1] |= new_tile->claimed[4];
-                if (new_tile->sides[2] == 'r')
-                    new_tile->claimed[2] |= new_tile->claimed[4];
-                if (new_tile->sides[3] == 'r')
-                    new_tile->claimed[3] |= new_tile->claimed[4];
-            }
-        }
-    }
-    
-    if (((old_tile = g[c.y+1][c.x])->sides[0] == 'r') && (new_tile->sides[2] == 'r')) {
-        if (old_tile->claimed[0] != 0) {
-            new_tile->claimed[2] |= old_tile->claimed[0];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[2];
-                if (new_tile->sides[1] == 'r')
-                    new_tile->claimed[1] |= new_tile->claimed[4];
-                if (new_tile->sides[0] == 'r')
-                    new_tile->claimed[0] |= new_tile->claimed[4];
-                if (new_tile->sides[3] == 'r')
-                    new_tile->claimed[3] |= new_tile->claimed[4];
-            }
-        }
-    }
-    
-    if (((old_tile = g[c.y][c.x-1])->sides[1] == 'r') && (new_tile->sides[3] == 'r')) {
-        if (old_tile->claimed[1] != 0) {
-            new_tile->claimed[3] = old_tile->claimed[1];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[3];
-                if (new_tile->sides[1] == 'r')
-                    new_tile->claimed[1] |= new_tile->claimed[4];
-                if (new_tile->sides[2] == 'r')
-                    new_tile->claimed[2] |= new_tile->claimed[4];
-                if (new_tile->sides[0] == 'r')
-                    new_tile->claimed[0] |= new_tile->claimed[4];
-            }
-        }
-    }
-    
-    if (((old_tile = g[c.y][c.x+1])->sides[3] == 'r') && (new_tile->sides[1] == 'r')) {
-        if (old_tile->claimed[3] != 0) {
-            new_tile->claimed[1] = old_tile->claimed[3];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[1];
-                if (new_tile->sides[0] == 'r')
-                    new_tile->claimed[0] |= new_tile->claimed[4];
-                if (new_tile->sides[2] == 'r')
-                    new_tile->claimed[2] |= new_tile->claimed[4];
-                if (new_tile->sides[3] == 'r')
-                    new_tile->claimed[3] |= new_tile->claimed[4];
-            }
-        }
-    }
-
-    int points[5] = {0};
-    if (new_tile->sides[0] == 'r') {
-        if (new_tile->sides[4] != 'r') {
-            coord new_c;
-            new_c.y = c.y-1;
-            new_c.x = c.y;
-            int ret = rewind_path(2, new_c, g);
-            if (ret != -1) {
-                if (new_tile->claimed[0] & 0b00001) {
-                    points[0] += ret;
-                }
-                if (new_tile->claimed[1] & 0b00010) {
-                    points[1] += ret;
-                }
-                if (new_tile->claimed[2] & 0b00100) {
-                    points[2] += ret;
-                }
-                if (new_tile->claimed[3] & 0b01000) {
-                    points[3] += ret;
-                }
-                if (new_tile->claimed[4] & 0b10000) {
-                    points[4] += ret;
-                }
-            }
-                
-        }
-    }
-    
-    
-}
 
 int rewind_path(uint from, coord to, grid g) {
     if (g[to.y][to.x] == NULL) {
@@ -930,65 +763,183 @@ int rewind_path(uint from, coord to, grid g) {
     return -1;
 }
 
-coord* get_all_possible_possitions(grid grid, tile* tile){ // pas encore testée
-    
-    uint size = 0, 
-         sizevalid = 0, 
-         i;
-    
-    coord *coo = get_all_available_positions(grid, &size);
 
-    if(size == 0) {
-        printf("Error : no empty position found for tile");
-        return NULL;
-    }
-
-    uint idvalid[size];
-
-    for(i = 0; i < size; i++){
-        if(is_valid_pos(grid, tile, coo[i]) == 1)
-        {
-            idvalid[sizevalid] = i;
-            sizevalid ++;
+int* check_road(grid g, coord c, joueur *joueurs) {
+    tile *new_tile = g[c.y][c.x]; 
+    tile *old_tile;
+    if (c.y-1 >= 0)
+    if (old_tile = g[c.y-1][c.x] != NULL) // continue
+    if ((old_tile->sides[2] == 'r') && (new_tile->sides[0] == 'r')) {
+        if (old_tile->claimed[2] != 0) {
+            new_tile->claimed[0] |= old_tile->claimed[2];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->claimed[4] |= new_tile->claimed[0];
+                if (new_tile->sides[1] == 'r')
+                    new_tile->claimed[1] |= new_tile->claimed[4];
+                if (new_tile->sides[2] == 'r')
+                    new_tile->claimed[2] |= new_tile->claimed[4];
+                if (new_tile->sides[3] == 'r')
+                    new_tile->claimed[3] |= new_tile->claimed[4];
+            }
         }
+    };
+    if (c.y+1 < 144)
+    if (((old_tile = g[c.y+1][c.x])->sides[0] == 'r') && (new_tile->sides[2] == 'r')) {
+        if (old_tile->claimed[0] != 0) {
+            new_tile->claimed[2] |= old_tile->claimed[0];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->claimed[4] |= new_tile->claimed[2];
+                if (new_tile->sides[1] == 'r')
+                    new_tile->claimed[1] |= new_tile->claimed[4];
+                if (new_tile->sides[0] == 'r')
+                    new_tile->claimed[0] |= new_tile->claimed[4];
+                if (new_tile->sides[3] == 'r')
+                    new_tile->claimed[3] |= new_tile->claimed[4];
+            }
+        }
+    };
+    if (c.x-1 >= 0)
+    if (((old_tile = g[c.y][c.x-1])->sides[1] == 'r') && (new_tile->sides[3] == 'r')) {
+        if (old_tile->claimed[1] != 0) {
+            new_tile->claimed[3] = old_tile->claimed[1];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->claimed[4] |= new_tile->claimed[3];
+                if (new_tile->sides[1] == 'r')
+                    new_tile->claimed[1] |= new_tile->claimed[4];
+                if (new_tile->sides[2] == 'r')
+                    new_tile->claimed[2] |= new_tile->claimed[4];
+                if (new_tile->sides[0] == 'r')
+                    new_tile->claimed[0] |= new_tile->claimed[4];
+            }
+        }
+    };
+    if (c.x+1 < 144)
+    if (((old_tile = g[c.y][c.x+1])->sides[3] == 'r') && (new_tile->sides[1] == 'r')) {
+        if (old_tile->claimed[3] != 0) {
+            new_tile->claimed[1] = old_tile->claimed[3];
+            if (new_tile->sides[4] == 'r') {
+                new_tile->claimed[4] |= new_tile->claimed[1];
+                if (new_tile->sides[0] == 'r')
+                    new_tile->claimed[0] |= new_tile->claimed[4];
+                if (new_tile->sides[2] == 'r')
+                    new_tile->claimed[2] |= new_tile->claimed[4];
+                if (new_tile->sides[3] == 'r')
+                    new_tile->claimed[3] |= new_tile->claimed[4];
+            }
+        }
+    };
+
+    int* points = calloc(5, sizeof(int));
+    int entry;
+    if (new_tile->sides[0] == 'r')
+        entry = 0;
+    else if (new_tile->sides[1] == 'r')
+        entry = 1;
+    else if (new_tile->sides[2] == 'r')
+        entry = 2;
+    else if (new_tile->sides[3] == 'r')
+        entry = 3;
+
+    coord new_c;
+    if (entry == 0) {
+        new_c.y = c.y - 1;
+        new_c.x = c.x;
     }
-
-    coord *validcoo = malloc(sizevalid * sizeof(coord));
-
-    for(i = 0; i < sizevalid; i++){
-        validcoo[i] = coo[idvalid[i]];
+    else if (entry == 1) {
+        new_c.y = c.y;
+        new_c.x = c.x + 1;
     }
+    else if (entry == 2) {
+        new_c.y = c.y + 1;
+        new_c.x = c.x;
+    }
+    else if (entry == 3) {
+        new_c.y = c.y;
+        new_c.x = c.x - 1;
+    }
+    
+    int ret = rewind_path(2, new_c, g);
+    if (ret != -1) {
+        if (new_tile->claimed[entry] & 0b00001) {
+            points[0] += ret;
+        }
+        if (new_tile->claimed[entry] & 0b00010) {
+            points[1] += ret;
+        }
+        if (new_tile->claimed[entry] & 0b00100) {
+            points[2] += ret;
+        }
+        if (new_tile->claimed[entry] & 0b01000) {
+            points[3] += ret;
+        }
+        if (new_tile->claimed[entry] & 0b10000) {
+            points[4] += ret;
+        }
+    }  
 
-    free(coo);
+    if (new_tile->sides[4] == 'r') {
+        int exit;
+        if      (new_tile->sides[0] == 'r' && entry != 0) 
+            exit = 0;
+        else if (new_tile->sides[1] == 'r' && entry != 1) 
+            exit = 1;
+        else if (new_tile->sides[2] == 'r' && entry != 2) 
+            exit = 2;
+        else if (new_tile->sides[3] == 'r' && entry != 3) 
+            exit = 3;
 
-    return validcoo;
+
+
+
+        if (exit == 0) {
+            new_c.y = c.y - 1;
+            new_c.x = c.x;
+        }
+        else if (exit == 1) {
+            new_c.y = c.y;
+            new_c.x = c.x + 1;
+        }
+        else if (exit == 2) {
+            new_c.y = c.y + 1;
+            new_c.x = c.x;
+        }
+        else if (exit == 3) {
+            new_c.y = c.y;
+            new_c.x = c.x - 1;
+        }
+
+        int ret = rewind_path(2, new_c, g);
+        if (ret != -1) {
+            if (new_tile->claimed[exit] & 0b00001) {
+                points[0] += ret;
+            }
+            if (new_tile->claimed[exit] & 0b00010) {
+                points[1] += ret;
+            }
+            if (new_tile->claimed[exit] & 0b00100) {
+                points[2] += ret;
+            }
+            if (new_tile->claimed[exit] & 0b01000) {
+                points[3] += ret;
+            }
+            if (new_tile->claimed[exit] & 0b10000) {
+                points[4] += ret;
+            }
+        }
+
+        for (int i = 0; i < 5; i++)
+            joueurs[i].points += points[i];
+
+    }
+    return points;
 }
 
+
 int main() {
-    srand(time(NULL));
+    srand(1);
 
     
-    grid grid = Grid();
+    gen_rand_game();
 
 
-    //basic_print_grid(grid);
-
-    tile** deck = readcsv("tuiles_base_simplifiees.csv");
-
-    gen_rand_valid_grill(grid, deck);
-    print_grid_color(grid);
-    //for (int i = 0; i < 72; i++) {
-    //    print_tile(deck[i]);
-    //}
-
-    joueur *joueur1 = Joueur(1);
-    joueur *joueur2 = Joueur(2);
-
-    free_grid(grid);
-    free_deck(deck);
-
-
-
-    free(joueur1);
-    free(joueur2);
 }
