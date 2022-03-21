@@ -67,7 +67,7 @@ tile* Tile()
         exit(1);
     }
     for (int i = 0; i < 5; i++)
-        T->meeple[i]  = 0;
+        T->claimed[i]  = 0;
     T->special = 0;
     
     int i = 0;
@@ -98,7 +98,7 @@ int empty_grid_row(grid G, int row){
     int i;
     
     for(i = 0; i < N_CARDS*2; i++)
-        if(G[row][i] != NULL)
+        if(G[row][i] != NULL && G[row][i]->istemp == 0)
             return 0;
     
     return 1;
@@ -110,19 +110,180 @@ int empty_grid_col(grid G, int col){
     //return 0;
     
     for(i = 0; i < N_CARDS*2; i++)
-        if(G[i][col] != NULL)
+        if(G[i][col] != NULL && G[i][col]->istemp == 0)
             return 0;
     
     return 1;
 }
 
-void basic_print_grid(grid G){
+
+void color_reset(){printf("\033[0m");}
+void color_p(){printf("\033[48;5;2m");}
+void color_a(){printf("\033[48;5;5m");}
+void color_v(){printf("\033[48;5;102m");}
+void color_V(){printf("\033[48;5;95m");}
+void color_r(){printf("\033[48;5;250m");}
+
+void icon_blue(){}
+void icon_red (){}
+
+void printside(char side, bool special, bool istemp, uint *nbpostmp, uint player){
+	
+    // routes  : blanc   ◼
+	// près    : vert    ▦
+	// ville   : rouge   ♜
+	// abbaye  : violet  ✚
+	// blason  : rouge   ⛨
+	// village : rouge   ◼
+	
+    // ▣ ✠ ⇧ ✚ ⟰ ⛶ ▄▄▄
+
+    if(istemp == 0)
+    {
+        if(side == 'r')
+            color_r();
+            
+        if(side == 'p' && special != 1)
+            color_p();
+
+        if(side == 'p' && special == 1)
+            color_a();
+            
+        if(side == 'V')
+            color_V();
+            
+        if(side == 'v')
+            color_v();
+    }
+
+    if(player > 0)
+    {
+        //♦ ●
+
+        // couleurs : 
+        // bleu   21
+        // jaune  220 
+        // rouge  124 / 9
+        // orange 208
+        // cyan 51 
+
+        // bleu
+        if(player == 1){
+            printf("\033[38;5;21m ● \033[0m");
+            return;}
+
+        //rouge
+        if(player == 2){
+            printf("\033[38;5;196m ● \033[0m");
+            return;}
+
+        //jaune
+        if(player == 3){
+            printf("\033[38;5;220m ● \033[0m");
+            return;}
+
+        //cyan
+        if(player == 4){
+            printf("\033[38;5;51m ● \033[0m");
+            return;}
+        
+        //orange
+        if(player == 5){
+            printf("\033[38;5;208m ● \033[0m");
+            return;}
+    }
+
+
+	else if(istemp == 0)
+    {
+        if(side == 'r'){
+            printf("   \033[0m");
+            return;}
+        
+        if(side == 'p' && special != 1){
+            printf(" · \033[0m");
+            return;}
+
+        if(side == 'V' && special != 1){
+            printf(" ^ \033[0m");
+            return;}
+        
+        if(side == 'p' && special == 1){
+            printf(" ♱ \033[0m");
+            return;}
+        
+        if(side == 'V' && special == 1){
+            printf(" ⚑ \033[0m");
+            return;}
+        
+        if(side == 'v'){
+            printf(" ⌂ \033[0m");
+            return;}
+	}
+
+	if(nbpostmp == NULL)
+    {
+        if(side == 'r'){
+            printf(" ⛶ ");
+            return;}
+        
+        if(side == 'p' && special != 1){
+            printf("\033[0;32m ⛶ \033[0m");
+            return;}
+        
+        if(side == 'V'){
+            printf("\033[0;31m ⛶ \033[0m");
+            return;}
+        
+        if(side == 'p' && special == 1){
+            printf("\033[0;36m ⛶ \033[0m");
+            return;}
+
+        if(side == 'v'){
+            printf("\033[0;31m ⛶ \033[0m");
+            return;}
+	}
+	
+	if(nbpostmp != NULL)
+    {
+        (*nbpostmp) ++;
+        
+        char c = (*nbpostmp) + 64;
+        
+        if(side == 'r'){
+            printf(" %c ", c);
+            return;}
+        
+        if(side == 'p' && special != 1){
+            printf("\033[0;32m %c \033[0m", c);
+            return;}
+        
+        if(side == 'V'){
+            printf("\033[0;31m %c \033[0m", c);
+            return;}
+        
+        if(side == 'p' && special == 1){
+            printf("\033[0;36m %c \033[0m", c);
+            return;}
+        
+        if(side == 'v'){
+            printf("\033[0;35m %c \033[0m", c);
+            return;}
+	}
+	
+	printf("%c", side);
+}
+
+void print_grid_color(grid G){
     
     int i = 0, 
         j = 0, 
         firstcol = 0,
-        lastcol  = N_CARDS*2,
-        lenght   = N_CARDS*2;
+        lastcol  = N_CARDS*2 - 1,
+        lenght   = N_CARDS*2 - 1,
+        offset = 4;
+	
+	uint nbpostmp = 0;
     
     while(empty_grid_col(G, i) == 1){
         firstcol ++;
@@ -135,40 +296,76 @@ void basic_print_grid(grid G){
         lastcol--;
         i--;
     }
-    
-    
+
+    if(lastcol < N_CARDS+offset)
+        lastcol = N_CARDS+offset;
+
+    if(firstcol > N_CARDS-offset)
+        firstcol = N_CARDS-offset;
+
+    firstcol --;
+    lastcol  ++;
+
     for(i = 0; i < lenght; i++){
         
-        if(empty_grid_row(G, i) == 0){
-            for(j = firstcol; j < lastcol; j++){
-                if(G[i][j] != NULL)
-                    printf("  %c  ", G[i][j]->sides[0]);
-                
+        if((i < N_CARDS+offset && i > N_CARDS-offset) || 
+           (i < lenght-1 && empty_grid_row(G, i+1) == 0))
+            {
+            for(j = firstcol; j < lastcol+1; j++){
+                if(G[i][j] != NULL){
+                    if(G[i][j]->sides[3] != 'r' && G[i][j]->sides[0] == G[i][j]->sides[3])
+                        printside(G[i][j]->sides[3], 0, G[i][j]->istemp, NULL, 0);
+                    else
+                        printside('p', 0, G[i][j]->istemp, NULL, 0);
+
+					printside(G[i][j]->sides[0], 0, G[i][j]->istemp, NULL, G[i][j]->meeple[0]);
+					
+                    if(G[i][j]->sides[0] != 'r' && G[i][j]->sides[0] == G[i][j]->sides[1])
+                        printside(G[i][j]->sides[1], 0, G[i][j]->istemp, NULL, 0);
+                    else
+                        printside('p', 0, G[i][j]->istemp, NULL, 0);
+				}
                 else
-                    printf("     ");
+                    printf("         ");
             }
             printf("\n");
             
-            for(j = firstcol; j < lastcol; j++){
-                if(G[i][j] != NULL)
-                    printf(" %c%c%c ", G[i][j]->sides[3], G[i][j]->sides[4], G[i][j]->sides[1]);
-                
+            for(j = firstcol; j < lastcol+1; j++){
+                if(G[i][j] != NULL){
+					printside(G[i][j]->sides[3], 0, G[i][j]->istemp, NULL, G[i][j]->meeple[3]);
+					printside(G[i][j]->sides[4], G[i][j]->special, G[i][j]->istemp, &nbpostmp, G[i][j]->meeple[4]);
+					printside(G[i][j]->sides[1], 0, G[i][j]->istemp, NULL, G[i][j]->meeple[1]);
+				}
                 else
-                    printf("     ");
+                    printf("         ");
             }
             printf("\n");
             
-            for(j = firstcol; j < lastcol; j++){
-                if(G[i][j] != NULL)
-                    printf("  %c  ", G[i][j]->sides[2]);
-            
+            for(j = firstcol; j < lastcol+1; j++){
+                if(G[i][j] != NULL){
+                    if(G[i][j]->sides[2] != 'r' && G[i][j]->sides[2] == G[i][j]->sides[3])
+                        printside(G[i][j]->sides[2], 0, G[i][j]->istemp, NULL, 0);
+                    else
+                        printside('p', 0, G[i][j]->istemp, NULL, 0);
+
+
+					printside(G[i][j]->sides[2], 0, G[i][j]->istemp, NULL, G[i][j]->meeple[2]);
+                    
+                    if(G[i][j]->sides[2] != 'r' && G[i][j]->sides[2] == G[i][j]->sides[1])
+                        printside(G[i][j]->sides[2], 0, G[i][j]->istemp, NULL, 0);
+                    else
+                        printside('p', 0, G[i][j]->istemp, NULL, 0);
+                    //printf("  ");
+				}
                 else
-                    printf("     ");
+                    printf("         ");
             }
-            printf("\n\n");
+            printf("\n");
         }    
     }
 }
+
+
 
 tile** readcsv(char* filename) {
     tile **deck = malloc(sizeof(tile *) * 72);
@@ -338,69 +535,6 @@ void printside(char side, bool special, bool istemp, uint *nbpostmp){
 	printf("%c", side);
 }
 
-void print_grid_color(grid G){
-    
-    int i = 0, 
-        j = 0, 
-        firstcol = 0,
-        lastcol  = N_CARDS*2 - 1,
-        lenght   = N_CARDS*2 - 1;
-	
-	uint nbpostmp = 0;
-    
-    while(empty_grid_col(G, i) == 1){
-        firstcol ++;
-        i++;
-    }
-    
-    i = lenght;
-    
-    while(empty_grid_col(G, i) == 1){
-        lastcol--;
-        i--;
-    }
-    
-    for(i = 0; i < lenght; i++){
-        
-        if(empty_grid_row(G, i) == 0){
-            for(j = firstcol; j < lastcol+1; j++){
-                if(G[i][j] != NULL){
-					printf("   ");
-					printside(G[i][j]->sides[0], G[i][j]->special, G[i][j]->istemp, NULL);
-					printf("  ");
-				}
-                else
-                    printf("      ");
-            }
-            printf("\n");
-            
-            for(j = firstcol; j < lastcol+1; j++){
-                if(G[i][j] != NULL){
-					printf(" ");
-					printside(G[i][j]->sides[3], G[i][j]->special, G[i][j]->istemp, NULL);
-					printf(" ");
-					printside(G[i][j]->sides[4], G[i][j]->special, G[i][j]->istemp, &nbpostmp);
-					printf(" ");
-					printside(G[i][j]->sides[1], G[i][j]->special, G[i][j]->istemp, NULL);
-				}
-                else
-                    printf("      ");
-            }
-            printf("\n");
-            
-            for(j = firstcol; j < lastcol+1; j++){
-                if(G[i][j] != NULL){
-					printf("   ");
-					printside(G[i][j]->sides[2], G[i][j]->special, G[i][j]->istemp, NULL);
-					printf("  ");
-				}
-                else
-                    printf("      ");
-            }
-            printf("\n");
-        }    
-    }
-}
 
 bool is_valid_pos(grid grid, tile* tile, coord coord){
     
@@ -462,8 +596,8 @@ void gen_rand_valid_grill(grid grid, tile **deck){
         k;
     srand(time(NULL));
    
-    for(int i = 0; i < 7; i++){
-        for(int j = 0; j < 8; j++) {
+    for(int i = 70; i < 80; i++){
+        for(int j = 70; j < 80; j++) {
             
             do
                 k = rand()%N_CARDS;
@@ -473,7 +607,7 @@ void gen_rand_valid_grill(grid grid, tile **deck){
             c.y = i;
             try = 0;
             
-            if((i == 0 && j == 0) || in_empty(grid, i, j) == 0)
+            if((i == 70 && j == 70) || in_empty(grid, i, j) == 0)
             {
                 while(try < maxtry && is_valid_pos(grid, deck[k], c) != 1)
                 {
@@ -512,73 +646,214 @@ void print_grid_with_pos(grid grid, coord* coo, tile* tile, uint size)
 	tile->istemp = 0;
 }
 
+coord* get_all_available_positions(grid grid, uint* size)
+{
+    coord *coo = NULL;
+
+*size = 0;
+
+    for(int i = 0; i < N_CARDS*2; i++)
+        for(int j = 0; j < N_CARDS*2; j++)
+        {
+           if(grid[i][j] == NULL && ( ( i < (2*N_CARDS)-1 && grid[i+1][j] != NULL ) ||
+                                      ( j < (2*N_CARDS)-1 && grid[i][j+1] != NULL ) ||
+                                      ( i > 0 && grid[i-1][j] != NULL ) ||
+                                      ( j > 0 && grid[i][j-1] != NULL ) ))
+            {
+                (*size) ++;
+                coo = realloc(coo, *size*sizeof(coo));
+                coo[*size-1].x = j;
+                coo[*size-1].y = i;
+            }
+        }
+
+    return coo;
+}
+
+coord* get_all_possible_positions(grid grid, uint *size, tile* tile){ 
+    
+    uint sizetmp = 0, 
+         i;
+    
+    coord *coo = get_all_available_positions(grid, &sizetmp);
+
+    if(sizetmp == 0) {
+        printf("Error : no empty position found for tile");
+        return NULL;
+    }
+
+    uint idvalid[sizetmp];
+
+    for(i = 0; i < sizetmp; i++){
+        if(is_valid_pos(grid, tile, coo[i]) == 1)
+        {
+            idvalid[*size] = i;
+            (*size) ++;
+        }
+    }
+
+    coord *validcoo = malloc(*size * sizeof(coord));
+
+    for(i = 0; i < *size; i++){
+        validcoo[i] = coo[idvalid[i]];
+    }
+
+    free(coo);
+
+    return validcoo;
+}
+
+void gen_rand_game()
+{
+    grid grid = Grid();
+    tile** deck = readcsv("tuiles_base_simplifiees.csv");
+    coord *coo = NULL;
+
+    uint csize = 0, 
+         i = 1, 
+         randid = 0,
+         player = 0;
+
+    grid[72][72] = deck[0];
+    deck[0] = NULL;
+
+    printf("\e[1;1H\e[2J");
+
+    for(; i < 72; i++)
+    {
+        player = (i-1)%5 + 1;
+
+        csize = 0;
+        
+        while(csize == 0)
+        {
+            rotate_tile_clockwise(deck[i]);
+            coo = get_all_possible_positions(grid, &csize, deck[i]);
+        }
+        
+        print_grid_with_pos(grid, coo, deck[i], csize);
+
+        randid = rand()%csize;
+
+        grid[coo[randid].y][coo[randid].x] = deck[i];
+        deck[i] = NULL;
+
+        if(rand()%4 == 0)
+            grid[coo[randid].y][coo[randid].x]->meeple[rand()%5] = player;
+
+        printf("\n\n\t===> Tuile n°%d", i);
+        printf("\n\t===> Le joueur %d joue aléatoirement", player);
+        printf("\n\t===> Entrer pour continuier");
+
+        free(coo);
+        getchar();
+        printf("\e[1;1H\e[2J");
+
+        print_grid_color(grid);
+
+        printf("\n\n\t===> Tuile n°%d", i);
+        printf("\n\t===> Le joueur %d joue aléatoirement", player);
+        printf("\n\t===> Entrer pour continuier");
+
+        getchar();
+        printf("\e[1;1H\e[2J");
+    }
+
+    print_grid_color(grid);
+
+    free_grid(grid);
+    free_deck(deck);
+}
+
 
 int* check_road(grid g, coord c, joueur* joueurs) {
     tile *new_tile = g[c.y][c.y]; 
     tile *old_tile;
     if (((old_tile = g[c.y-1][c.x])->sides[2] == 'r') && (new_tile->sides[0] == 'r')) {
-        if (old_tile->meeple[2] != 0) {
-            new_tile->meeple[0] |= old_tile->meeple[2];
+        if (old_tile->claimed[2] != 0) {
+            new_tile->claimed[0] |= old_tile->claimed[2];
             if (new_tile->sides[4] == 'r') {
-                new_tile->meeple[4] |= new_tile->meeple[0];
+                new_tile->claimed[4] |= new_tile->claimed[0];
                 if (new_tile->sides[1] == 'r')
-                    new_tile->meeple[1] |= new_tile->meeple[4];
+                    new_tile->claimed[1] |= new_tile->claimed[4];
                 if (new_tile->sides[2] == 'r')
-                    new_tile->meeple[2] |= new_tile->meeple[4];
+                    new_tile->claimed[2] |= new_tile->claimed[4];
                 if (new_tile->sides[3] == 'r')
-                    new_tile->meeple[3] |= new_tile->meeple[4];
+                    new_tile->claimed[3] |= new_tile->claimed[4];
             }
         }
     }
     
     if (((old_tile = g[c.y+1][c.x])->sides[0] == 'r') && (new_tile->sides[2] == 'r')) {
-        if (old_tile->meeple[0] != 0) {
-            new_tile->meeple[2] |= old_tile->meeple[0];
+        if (old_tile->claimed[0] != 0) {
+            new_tile->claimed[2] |= old_tile->claimed[0];
             if (new_tile->sides[4] == 'r') {
-                new_tile->meeple[4] |= new_tile->meeple[2];
+                new_tile->claimed[4] |= new_tile->claimed[2];
                 if (new_tile->sides[1] == 'r')
-                    new_tile->meeple[1] |= new_tile->meeple[4];
+                    new_tile->claimed[1] |= new_tile->claimed[4];
                 if (new_tile->sides[0] == 'r')
-                    new_tile->meeple[0] |= new_tile->meeple[4];
+                    new_tile->claimed[0] |= new_tile->claimed[4];
                 if (new_tile->sides[3] == 'r')
-                    new_tile->meeple[3] |= new_tile->meeple[4];
+                    new_tile->claimed[3] |= new_tile->claimed[4];
             }
         }
     }
     
     if (((old_tile = g[c.y][c.x-1])->sides[1] == 'r') && (new_tile->sides[3] == 'r')) {
-        if (old_tile->meeple[1] != 0) {
-            new_tile->meeple[3] = old_tile->meeple[1];
+        if (old_tile->claimed[1] != 0) {
+            new_tile->claimed[3] = old_tile->claimed[1];
             if (new_tile->sides[4] == 'r') {
-                new_tile->meeple[4] |= new_tile->meeple[3];
+                new_tile->claimed[4] |= new_tile->claimed[3];
                 if (new_tile->sides[1] == 'r')
-                    new_tile->meeple[1] |= new_tile->meeple[4];
+                    new_tile->claimed[1] |= new_tile->claimed[4];
                 if (new_tile->sides[2] == 'r')
-                    new_tile->meeple[2] |= new_tile->meeple[4];
+                    new_tile->claimed[2] |= new_tile->claimed[4];
                 if (new_tile->sides[0] == 'r')
-                    new_tile->meeple[0] |= new_tile->meeple[4];
+                    new_tile->claimed[0] |= new_tile->claimed[4];
             }
         }
     }
     
     if (((old_tile = g[c.y][c.x+1])->sides[3] == 'r') && (new_tile->sides[1] == 'r')) {
-        if (old_tile->meeple[3] != 0) {
-            new_tile->meeple[1] = old_tile->meeple[3];
+        if (old_tile->claimed[3] != 0) {
+            new_tile->claimed[1] = old_tile->claimed[3];
             if (new_tile->sides[4] == 'r') {
-                new_tile->meeple[4] |= new_tile->meeple[1];
+                new_tile->claimed[4] |= new_tile->claimed[1];
                 if (new_tile->sides[0] == 'r')
-                    new_tile->meeple[0] |= new_tile->meeple[4];
+                    new_tile->claimed[0] |= new_tile->claimed[4];
                 if (new_tile->sides[2] == 'r')
-                    new_tile->meeple[2] |= new_tile->meeple[4];
+                    new_tile->claimed[2] |= new_tile->claimed[4];
                 if (new_tile->sides[3] == 'r')
-                    new_tile->meeple[3] |= new_tile->meeple[4];
+                    new_tile->claimed[3] |= new_tile->claimed[4];
             }
         }
     }
 
+    int points[5] = {0};
     if (new_tile->sides[0] == 'r') {
         if (new_tile->sides[4] != 'r') {
-            //implement rewind path
+            coord new_c;
+            new_c.y = c.y-1;
+            new_c.x = c.y;
+            int ret = rewind_path(2, new_c, g);
+            if (ret != -1) {
+                if (new_tile->claimed[0] & 0b00001) {
+                    points[0] += ret;
+                }
+                if (new_tile->claimed[1] & 0b00010) {
+                    points[1] += ret;
+                }
+                if (new_tile->claimed[2] & 0b00100) {
+                    points[2] += ret;
+                }
+                if (new_tile->claimed[3] & 0b01000) {
+                    points[3] += ret;
+                }
+                if (new_tile->claimed[4] & 0b10000) {
+                    points[4] += ret;
+                }
+            }
+                
         }
     }
     
@@ -590,6 +865,7 @@ int rewind_path(uint from, coord to, grid g) {
         return -1;
     }
     if (g[to.y][to.x]->sides[4] != 'r') {
+        g[to.y][to.x]->closed[from] = true;
         return 0;
     }
 
@@ -600,8 +876,12 @@ int rewind_path(uint from, coord to, grid g) {
         int v = rewind_path(2, c, g);
         if (v == -1)
             return -1;
-        else 
+        else {
+            g[to.y][to.x]->closed[from] = true;
+            g[to.y][to.x]->closed[4] = true;
+            g[to.y][to.x]->closed[0] = true;
             return v+1;
+        }
     }
     
     if ((g[to.y][to.x]->sides[1] == 'r') && (from != 1)) {
@@ -611,8 +891,12 @@ int rewind_path(uint from, coord to, grid g) {
         int v = rewind_path(3, c, g);
         if (v == -1)
             return -1;
-        else 
+        else {
+            g[to.y][to.x]->closed[from] = true;
+            g[to.y][to.x]->closed[4] = true;
+            g[to.y][to.x]->closed[1] = true;
             return v+1;
+        }
     }
     if ((g[to.y][to.x]->sides[2] == 'r') && (from != 2)) {
         coord c;
@@ -621,8 +905,12 @@ int rewind_path(uint from, coord to, grid g) {
         int v = rewind_path(0, c, g);
         if (v == -1)
             return -1;
-        else 
+        else {
+            g[to.y][to.x]->closed[from] = true;
+            g[to.y][to.x]->closed[4] = true;
+            g[to.y][to.x]->closed[2] = true;
             return v+1;
+        }
     }
     if ((g[to.y][to.x]->sides[3] == 'r') && (from != 3)) {
         coord c;
@@ -631,8 +919,12 @@ int rewind_path(uint from, coord to, grid g) {
         int v = rewind_path(1, c, g);
         if (v == -1)
             return -1;
-        else 
+        else {
+            g[to.y][to.x]->closed[from] = true;
+            g[to.y][to.x]->closed[4] = true;
+            g[to.y][to.x]->closed[3] = true;
             return v+1;
+        }
     }
 
     return -1;

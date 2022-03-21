@@ -10,6 +10,7 @@ typedef unsigned int uint;
 typedef struct tile_t {
     char sides[5]; // c = Champ, V = Ville, c = Champs, m = Monastère, v = Village, B = blazon
     uint meeple[5];
+    uint claimed[5];
     bool special;
     bool closed[4];
     bool istemp;
