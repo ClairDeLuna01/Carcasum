@@ -607,7 +607,7 @@ coord* get_all_possible_positions(grid grid, uint *size, tile* tile){
 
 void gen_rand_game()
 {
-    grid grid = Grid();
+    grid g = Grid();
     tile** deck = readcsv("tuiles_base_simplifiees.csv");
     coord *coo = NULL;
 
@@ -621,7 +621,7 @@ void gen_rand_game()
         joueurs[i].id = i;
     }
 
-    grid[72][72] = deck[0];
+    g[72][72] = deck[0];
     deck[0] = NULL;
 
     printf("\e[1;1H\e[2J");
@@ -635,43 +635,48 @@ void gen_rand_game()
         while(csize == 0)
         {
             rotate_tile_clockwise(deck[i]);
-            coo = get_all_possible_positions(grid, &csize, deck[i]);
+            coo = get_all_possible_positions(g, &csize, deck[i]);
         }
         
-        print_grid_with_pos(grid, coo, deck[i], csize);
+        print_grid_with_pos(g, coo, deck[i], csize);
 
         randid = rand()%csize;
 
-        grid[coo[randid].y][coo[randid].x] = deck[i];
+        g[coo[randid].y][coo[randid].x] = deck[i];
         deck[i] = NULL;
 
-        if(rand()%4 == 0)
-            grid[coo[randid].y][coo[randid].x]->meeple[rand()%5] = player;
+        if(rand()%4 == 0) {
+            int n = rand()%5;
+            g[coo[randid].y][coo[randid].x]->meeple[n] = player;
+            g[coo[randid].y][coo[randid].x]->claimed[n] = (uint)pow(2, player);
+        }
 
         printf("\n\n\t===> Tuile n°%d", i);
         printf("\n\t===> Le joueur %d joue aléatoirement", player);
         printf("\n\t===> Entrer pour continuier");
 
-        getchar();
+        
+        //getchar();
         printf("\e[1;1H\e[2J");
 
-        print_grid_color(grid);
+        print_grid_color(g);
 
         printf("\n\n\t===> Tuile n°%d", i);
         printf("\n\t===> Le joueur %d joue aléatoirement", player);
         
         bool road = false;
         for (int i = 0; i < 4; i++) {
-            if (grid[coo[randid].y][coo[randid].x]->sides[i] == 'r')
+            if (g[coo[randid].y][coo[randid].x]->sides[i] == 'r')
                 road = true;
         }
 
         if (road) {
-            int* points = check_road(grid, coo[randid], joueurs);
+            int* points = check_road(g, coo[randid], joueurs);
             
             for (int i = 0; i < 5; i++) {
                 if (points[i] > 0) {
                     printf("\n\tjoueur %d a gagner %d points", i, points[i]);
+                    getchar();
                 }
             }
             free(points);
@@ -680,15 +685,15 @@ void gen_rand_game()
         printf("\n\t===> Entrer pour continuier");
 
 
-
-        getchar();
+        
+        //getchar();
         printf("\e[1;1H\e[2J");
         free(coo);
     }
 
-    print_grid_color(grid);
+    print_grid_color(g);
 
-    free_grid(grid);
+    free_grid(g);
     free_deck(deck);
 }
 
@@ -699,62 +704,58 @@ int rewind_path(uint from, coord to, grid g) {
     }
     if (g[to.y][to.x]->sides[4] != 'r') {
         g[to.y][to.x]->closed[from] = true;
-        return 0;
+        return 1;
     }
 
-    if ((g[to.y][to.x]->sides[0] == 'r') && (from != 0)) {
+    if ((g[to.y][to.x]->sides[0] == 'r') && (from != 2)) {
         coord c;
         c.y = to.y-1;
-        c.x = to.x;
-        int v = rewind_path(2, c, g);
-        if (v == -1)
-            return -1;
-        else {
-            g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[4] = true;
-            g[to.y][to.x]->closed[0] = true;
-            return v+1;
-        }
-    }
-    
-    if ((g[to.y][to.x]->sides[1] == 'r') && (from != 1)) {
-        coord c;
-        c.y = to.y;
-        c.x = to.x+1;
-        int v = rewind_path(3, c, g);
-        if (v == -1)
-            return -1;
-        else {
-            g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[4] = true;
-            g[to.y][to.x]->closed[1] = true;
-            return v+1;
-        }
-    }
-    if ((g[to.y][to.x]->sides[2] == 'r') && (from != 2)) {
-        coord c;
-        c.y = to.y+1;
         c.x = to.x;
         int v = rewind_path(0, c, g);
         if (v == -1)
             return -1;
         else {
             g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[4] = true;
-            g[to.y][to.x]->closed[2] = true;
+            g[to.y][to.x]->closed[0] = true;
             return v+1;
         }
     }
-    if ((g[to.y][to.x]->sides[3] == 'r') && (from != 3)) {
+    
+    if ((g[to.y][to.x]->sides[1] == 'r') && (from != 3)) {
         coord c;
         c.y = to.y;
-        c.x = to.x-1;
+        c.x = to.x+1;
         int v = rewind_path(1, c, g);
         if (v == -1)
             return -1;
         else {
             g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[4] = true;
+            g[to.y][to.x]->closed[1] = true;
+            return v+1;
+        }
+    }
+    if ((g[to.y][to.x]->sides[2] == 'r') && (from != 0)) {
+        coord c;
+        c.y = to.y+1;
+        c.x = to.x;
+        int v = rewind_path(2, c, g);
+        if (v == -1)
+            return -1;
+        else {
+            g[to.y][to.x]->closed[from] = true;
+            g[to.y][to.x]->closed[2] = true;
+            return v+1;
+        }
+    }
+    if ((g[to.y][to.x]->sides[3] == 'r') && (from != 1)) {
+        coord c;
+        c.y = to.y;
+        c.x = to.x-1;
+        int v = rewind_path(3, c, g);
+        if (v == -1)
+            return -1;
+        else {
+            g[to.y][to.x]->closed[from] = true;
             g[to.y][to.x]->closed[3] = true;
             return v+1;
         }
@@ -768,7 +769,7 @@ int* check_road(grid g, coord c, joueur *joueurs) {
     tile *new_tile = g[c.y][c.x]; 
     tile *old_tile;
     if (c.y-1 >= 0)
-    if (old_tile = g[c.y-1][c.x] != NULL) // continue
+    if ((old_tile = g[c.y-1][c.x]) != NULL) 
     if ((old_tile->sides[2] == 'r') && (new_tile->sides[0] == 'r')) {
         if (old_tile->claimed[2] != 0) {
             new_tile->claimed[0] |= old_tile->claimed[2];
@@ -784,7 +785,8 @@ int* check_road(grid g, coord c, joueur *joueurs) {
         }
     };
     if (c.y+1 < 144)
-    if (((old_tile = g[c.y+1][c.x])->sides[0] == 'r') && (new_tile->sides[2] == 'r')) {
+    if ((old_tile = g[c.y+1][c.x]) != NULL) 
+    if ((old_tile->sides[0] == 'r') && (new_tile->sides[2] == 'r')) {
         if (old_tile->claimed[0] != 0) {
             new_tile->claimed[2] |= old_tile->claimed[0];
             if (new_tile->sides[4] == 'r') {
@@ -799,7 +801,8 @@ int* check_road(grid g, coord c, joueur *joueurs) {
         }
     };
     if (c.x-1 >= 0)
-    if (((old_tile = g[c.y][c.x-1])->sides[1] == 'r') && (new_tile->sides[3] == 'r')) {
+    if ((old_tile = g[c.y][c.x-1]) != NULL) 
+    if ((old_tile->sides[1] == 'r') && (new_tile->sides[3] == 'r')) {
         if (old_tile->claimed[1] != 0) {
             new_tile->claimed[3] = old_tile->claimed[1];
             if (new_tile->sides[4] == 'r') {
@@ -814,7 +817,8 @@ int* check_road(grid g, coord c, joueur *joueurs) {
         }
     };
     if (c.x+1 < 144)
-    if (((old_tile = g[c.y][c.x+1])->sides[3] == 'r') && (new_tile->sides[1] == 'r')) {
+    if ((old_tile = g[c.y][c.x+1]) != NULL) 
+    if ((old_tile->sides[3] == 'r') && (new_tile->sides[1] == 'r')) {
         if (old_tile->claimed[3] != 0) {
             new_tile->claimed[1] = old_tile->claimed[3];
             if (new_tile->sides[4] == 'r') {
@@ -858,7 +862,7 @@ int* check_road(grid g, coord c, joueur *joueurs) {
         new_c.x = c.x - 1;
     }
     
-    int ret = rewind_path(2, new_c, g);
+    int ret = rewind_path(2, new_c, g) + 1;
     if (ret != -1) {
         if (new_tile->claimed[entry] & 0b00001) {
             points[0] += ret;
@@ -936,7 +940,7 @@ int* check_road(grid g, coord c, joueur *joueurs) {
 
 
 int main() {
-    srand(1);
+    srand(3); // bug
 
     
     gen_rand_game();
