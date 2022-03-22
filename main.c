@@ -698,11 +698,11 @@ void gen_rand_game()
 }
 
 
-int rewind_path(uint from, coord to, grid g) {
+int rewind_path(uint from, coord to, grid g, uint depth) {
     if (g[to.y][to.x] == NULL) {
         return -1;
     }
-    if (g[to.y][to.x]->sides[4] != 'r') {
+    if ((g[to.y][to.x]->sides[4] != 'r') && (depth > 0)) {
         g[to.y][to.x]->closed[from] = true;
         return 1;
     }
@@ -711,7 +711,7 @@ int rewind_path(uint from, coord to, grid g) {
         coord c;
         c.y = to.y-1;
         c.x = to.x;
-        int v = rewind_path(0, c, g);
+        int v = rewind_path(0, c, g, depth+1);
         if (v == -1)
             return -1;
         else {
@@ -721,11 +721,11 @@ int rewind_path(uint from, coord to, grid g) {
         }
     }
     
-    if ((g[to.y][to.x]->sides[1] == 'r') && (from != 3)) {
+    if ((g[to.y][to.x]->sides[1] == 'r') && (from != 3)) { // brain broke here
         coord c;
         c.y = to.y;
         c.x = to.x+1;
-        int v = rewind_path(1, c, g);
+        int v = rewind_path(1, c, g, depth+1);
         if (v == -1)
             return -1;
         else {
@@ -738,7 +738,7 @@ int rewind_path(uint from, coord to, grid g) {
         coord c;
         c.y = to.y+1;
         c.x = to.x;
-        int v = rewind_path(2, c, g);
+        int v = rewind_path(2, c, g, depth+1);
         if (v == -1)
             return -1;
         else {
@@ -751,7 +751,7 @@ int rewind_path(uint from, coord to, grid g) {
         coord c;
         c.y = to.y;
         c.x = to.x-1;
-        int v = rewind_path(3, c, g);
+        int v = rewind_path(3, c, g, depth+1);
         if (v == -1)
             return -1;
         else {
@@ -862,8 +862,8 @@ int* check_road(grid g, coord c, joueur *joueurs) {
         new_c.x = c.x - 1;
     }
     
-    int ret = rewind_path(2, new_c, g) + 1;
-    if (ret != -1) {
+    int ret = rewind_path(2, new_c, g, 0) + 1;
+    if (ret != 0) {
         if (new_tile->claimed[entry] & 0b00001) {
             points[0] += ret;
         }
@@ -912,7 +912,7 @@ int* check_road(grid g, coord c, joueur *joueurs) {
             new_c.x = c.x - 1;
         }
 
-        int ret = rewind_path(2, new_c, g);
+        int ret = rewind_path(2, new_c, g, 0);
         if (ret != -1) {
             if (new_tile->claimed[exit] & 0b00001) {
                 points[0] += ret;
@@ -940,7 +940,7 @@ int* check_road(grid g, coord c, joueur *joueurs) {
 
 
 int main() {
-    srand(3); // bug
+    srand(1); // bug
 
     
     gen_rand_game();
