@@ -697,247 +697,117 @@ void gen_rand_game()
     free_deck(deck);
 }
 
+bool is_struct_closed(grid G, int i, int j, uint *score, char c, int side)
+{
+    if(G[i][j] == NULL || G[i][j]->closed[side] == 1 ||
+      ((side == 0 || G[i][j]->sides[4] == c) && G[i][j]->sides[0] == c && G[i-1][j] == NULL)||
+      ((side == 2 || G[i][j]->sides[4] == c) && G[i][j]->sides[2] == c && G[i+1][j] == NULL)||
+      ((side == 3 || G[i][j]->sides[4] == c) && G[i][j]->sides[3] == c && G[i][j-1] == NULL)||
+      ((side == 1 || G[i][j]->sides[4] == c) && G[i][j]->sides[1] == c && G[i][j+1] == NULL))
+        return 0;
 
-int rewind_path(uint from, coord to, grid g, uint depth) {
-    if (g[to.y][to.x] == NULL) {
-        return -1;
-    }
-    if ((g[to.y][to.x]->sides[4] != 'r') && (depth > 0)) {
-        g[to.y][to.x]->closed[from] = true;
+    if(G[i][j]->istemp == 1)
         return 1;
-    }
-
-    if ((g[to.y][to.x]->sides[0] == 'r') && (from != 2)) {
-        coord c;
-        c.y = to.y-1;
-        c.x = to.x;
-        int v = rewind_path(0, c, g, depth+1);
-        if (v == -1)
-            return -1;
-        else {
-            g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[0] = true;
-            return v+1;
-        }
-    }
     
-    if ((g[to.y][to.x]->sides[1] == 'r') && (from != 3)) { // brain broke here
-        coord c;
-        c.y = to.y;
-        c.x = to.x+1;
-        int v = rewind_path(1, c, g, depth+1);
-        if (v == -1)
-            return -1;
-        else {
-            g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[1] = true;
-            return v+1;
-        }
+    if(c == 'V')
+    {
+        (*score) += 2;
+        if(G[i][j]->special == 1)
+            (*score) += 2;
     }
-    if ((g[to.y][to.x]->sides[2] == 'r') && (from != 0)) {
-        coord c;
-        c.y = to.y+1;
-        c.x = to.x;
-        int v = rewind_path(2, c, g, depth+1);
-        if (v == -1)
-            return -1;
-        else {
-            g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[2] = true;
-            return v+1;
-        }
-    }
-    if ((g[to.y][to.x]->sides[3] == 'r') && (from != 1)) {
-        coord c;
-        c.y = to.y;
-        c.x = to.x-1;
-        int v = rewind_path(3, c, g, depth+1);
-        if (v == -1)
-            return -1;
-        else {
-            g[to.y][to.x]->closed[from] = true;
-            g[to.y][to.x]->closed[3] = true;
-            return v+1;
+
+    if(c == 'r')
+        (*score) ++;
+
+    G[i][j]->istemp = 1;
+
+    if(G[i][j]->sides[4] != c)
+    {
+        switch(side)
+        {
+            case 0 :
+                return is_struct_closed(G, i-1, j, score, c, 2);;
+            case 1 :
+                return is_struct_closed(G, i, j+1, score, c, 3);
+            case 2 :
+                return is_struct_closed(G, i+1, j, score, c, 0);
+            case 3 :
+                return is_struct_closed(G, i, j-1, score, c, 1);
         }
     }
 
-    return -1;
+    bool itc = 1;
+
+    if(G[i][j]->sides[0] == c)
+        itc = itc && is_struct_closed(G, i-1, j, score, c, 2);
+        
+    if(G[i][j]->sides[2] == c)
+        itc = itc &&  is_struct_closed(G, i+1, j, score, c, 0);
+        
+    if(G[i][j]->sides[3] == c)
+         itc = itc && is_struct_closed(G, i, j-1, score, c, 1);
+
+    if(G[i][j]->sides[1] == c)
+        itc = itc &&  is_struct_closed(G, i, j+1, score, c, 3);
+
+    return itc;
 }
 
-
-int* check_road(grid g, coord c, joueur *joueurs) {
-    tile *new_tile = g[c.y][c.x]; 
-    tile *old_tile;
-    if (c.y-1 >= 0)
-    if ((old_tile = g[c.y-1][c.x]) != NULL) 
-    if ((old_tile->sides[2] == 'r') && (new_tile->sides[0] == 'r')) {
-        if (old_tile->claimed[2] != 0) {
-            new_tile->claimed[0] |= old_tile->claimed[2];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[0];
-                if (new_tile->sides[1] == 'r')
-                    new_tile->claimed[1] |= new_tile->claimed[4];
-                if (new_tile->sides[2] == 'r')
-                    new_tile->claimed[2] |= new_tile->claimed[4];
-                if (new_tile->sides[3] == 'r')
-                    new_tile->claimed[3] |= new_tile->claimed[4];
-            }
-        }
-    };
-    if (c.y+1 < 144)
-    if ((old_tile = g[c.y+1][c.x]) != NULL) 
-    if ((old_tile->sides[0] == 'r') && (new_tile->sides[2] == 'r')) {
-        if (old_tile->claimed[0] != 0) {
-            new_tile->claimed[2] |= old_tile->claimed[0];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[2];
-                if (new_tile->sides[1] == 'r')
-                    new_tile->claimed[1] |= new_tile->claimed[4];
-                if (new_tile->sides[0] == 'r')
-                    new_tile->claimed[0] |= new_tile->claimed[4];
-                if (new_tile->sides[3] == 'r')
-                    new_tile->claimed[3] |= new_tile->claimed[4];
-            }
-        }
-    };
-    if (c.x-1 >= 0)
-    if ((old_tile = g[c.y][c.x-1]) != NULL) 
-    if ((old_tile->sides[1] == 'r') && (new_tile->sides[3] == 'r')) {
-        if (old_tile->claimed[1] != 0) {
-            new_tile->claimed[3] = old_tile->claimed[1];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[3];
-                if (new_tile->sides[1] == 'r')
-                    new_tile->claimed[1] |= new_tile->claimed[4];
-                if (new_tile->sides[2] == 'r')
-                    new_tile->claimed[2] |= new_tile->claimed[4];
-                if (new_tile->sides[0] == 'r')
-                    new_tile->claimed[0] |= new_tile->claimed[4];
-            }
-        }
-    };
-    if (c.x+1 < 144)
-    if ((old_tile = g[c.y][c.x+1]) != NULL) 
-    if ((old_tile->sides[3] == 'r') && (new_tile->sides[1] == 'r')) {
-        if (old_tile->claimed[3] != 0) {
-            new_tile->claimed[1] = old_tile->claimed[3];
-            if (new_tile->sides[4] == 'r') {
-                new_tile->claimed[4] |= new_tile->claimed[1];
-                if (new_tile->sides[0] == 'r')
-                    new_tile->claimed[0] |= new_tile->claimed[4];
-                if (new_tile->sides[2] == 'r')
-                    new_tile->claimed[2] |= new_tile->claimed[4];
-                if (new_tile->sides[3] == 'r')
-                    new_tile->claimed[3] |= new_tile->claimed[4];
-            }
-        }
-    };
-
-    int* points = calloc(5, sizeof(int));
-    int entry;
-    if (new_tile->sides[0] == 'r')
-        entry = 0;
-    else if (new_tile->sides[1] == 'r')
-        entry = 1;
-    else if (new_tile->sides[2] == 'r')
-        entry = 2;
-    else if (new_tile->sides[3] == 'r')
-        entry = 3;
-
-    coord new_c;
-    if (entry == 0) {
-        new_c.y = c.y - 1;
-        new_c.x = c.x;
-    }
-    else if (entry == 1) {
-        new_c.y = c.y;
-        new_c.x = c.x + 1;
-    }
-    else if (entry == 2) {
-        new_c.y = c.y + 1;
-        new_c.x = c.x;
-    }
-    else if (entry == 3) {
-        new_c.y = c.y;
-        new_c.x = c.x - 1;
-    }
-    
-    int ret = rewind_path(2, new_c, g, 0) + 1;
-    if (ret != 0) {
-        if (new_tile->claimed[entry] & 0b00001) {
-            points[0] += ret;
-        }
-        if (new_tile->claimed[entry] & 0b00010) {
-            points[1] += ret;
-        }
-        if (new_tile->claimed[entry] & 0b00100) {
-            points[2] += ret;
-        }
-        if (new_tile->claimed[entry] & 0b01000) {
-            points[3] += ret;
-        }
-        if (new_tile->claimed[entry] & 0b10000) {
-            points[4] += ret;
-        }
-    }  
-
-    if (new_tile->sides[4] == 'r') {
-        int exit;
-        if      (new_tile->sides[0] == 'r' && entry != 0) 
-            exit = 0;
-        else if (new_tile->sides[1] == 'r' && entry != 1) 
-            exit = 1;
-        else if (new_tile->sides[2] == 'r' && entry != 2) 
-            exit = 2;
-        else if (new_tile->sides[3] == 'r' && entry != 3) 
-            exit = 3;
-
-
-
-
-        if (exit == 0) {
-            new_c.y = c.y - 1;
-            new_c.x = c.x;
-        }
-        else if (exit == 1) {
-            new_c.y = c.y;
-            new_c.x = c.x + 1;
-        }
-        else if (exit == 2) {
-            new_c.y = c.y + 1;
-            new_c.x = c.x;
-        }
-        else if (exit == 3) {
-            new_c.y = c.y;
-            new_c.x = c.x - 1;
-        }
-
-        int ret = rewind_path(2, new_c, g, 0);
-        if (ret != -1) {
-            if (new_tile->claimed[exit] & 0b00001) {
-                points[0] += ret;
-            }
-            if (new_tile->claimed[exit] & 0b00010) {
-                points[1] += ret;
-            }
-            if (new_tile->claimed[exit] & 0b00100) {
-                points[2] += ret;
-            }
-            if (new_tile->claimed[exit] & 0b01000) {
-                points[3] += ret;
-            }
-            if (new_tile->claimed[exit] & 0b10000) {
-                points[4] += ret;
-            }
-        }
-
-        for (int i = 0; i < 5; i++)
-            joueurs[i].points += points[i];
-
-    }
-    return points;
+void clear_tmpmark(grid G)
+{
+    for(int i = 0; i < N_CARDS*2; i++)
+        for(int j = 0; j < N_CARDS*2; j++)
+            if(G[i][j] != NULL)
+                G[i][j]->istemp = 0;
 }
 
+void close_stuct(grid G, int i, int j, uint score, char c, int side, joueur* p[5], bool winners[5])
+{
+    if(G[i][j] == NULL){
+        printf("\nError : close_struct function can't close open srtuct at position %d : %d in type %c\n", i, j, c);
+        return;}
+
+    if(G[i][j]->sides[side] != c){
+        printf("\nError : close_struct function can't close stuct with wrong type at position %d : %d\n\t\tExpected type %c but got %c\n", i, j, c, G[i][j]->sides[side]);
+        return;}
+
+    if(G[i][j]->closed[side] == 1)
+        return;
+    
+    for(int k = 0; k < 5; k++)
+        if(k == side || (G[i][j]->sides[4] == c && G[i][j]->sides[k] == c))
+        {
+            G[i][j]->closed[k] = 1;
+
+            if(G[i][j]->meeple[k] != 0)
+            {
+                if(winners[G[i][j]->meeple[k]-1] == 0)
+                {
+                    winners[G[i][j]->meeple[k]-1] = 1;
+                    p[G[i][j]->meeple[k]-1]->points += score;
+                }
+                
+                p[G[i][j]->meeple[k]-1]->meeples ++;
+                G[i][j]->meeple[k] = 0;            
+            }
+            
+            switch(k)
+            {
+                case 0 :
+                    close_stuct(G, i-1, j, score, c, 2, p, winners);
+                    break;
+                case 1 :
+                    close_stuct(G, i, j+1, score, c, 3, p, winners);
+                    break;
+                case 2 :
+                    close_stuct(G, i+1, j, score, c, 0, p, winners);
+                    break;
+                case 3 :
+                    close_stuct(G, i, j-1, score, c, 1, p, winners);
+                    break;   
+            }
+        }
+}
 
 int main() {
     srand(1); // bug
