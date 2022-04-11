@@ -3,32 +3,8 @@
 #include <stdbool.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 #include "f_names.h"
-
-
-
-
-
-/*
-CONVENTION FOR TILE SIDE NUMBERING:
-    0
-   341
-    2
-
-START UP
-INCREMENT CLOCKWISE
-
-* for corners start at the top right corner
-eg: 
-
-   4 1
-    #
-   3 2
-*/
-
-
-
-
 
 grid Grid() {
     grid l = malloc(sizeof(tile**) * N_CARDS * 2);
@@ -67,7 +43,7 @@ tile* Tile()
         exit(1);
     }
     for (int i = 0; i < 5; i++)
-        T->claimed[i]  = 0;
+        T->meeple[i]  = 0;
     T->special = 0;
     
     int i = 0;
@@ -104,18 +80,84 @@ int empty_grid_row(grid G, int row){
     return 1;
 }
 
-int empty_grid_col(grid G, int col){
-    int i;
-    
-    //return 0;
-    
-    for(i = 0; i < N_CARDS*2; i++)
+int empty_grid_col(grid G, int col)
+{
+    for(int i = 0; i < N_CARDS*2; i++)
         if(G[i][col] != NULL && G[i][col]->istemp == 0)
             return 0;
-    
     return 1;
 }
 
+tile** readcsv(char* filename) {
+    tile **deck = malloc(sizeof(tile *) * 72);
+    for (int i = 0; i <= N_CARDS; i++)
+        deck[i] = Tile();
+    
+    int i = 0, j = 1;
+    FILE *fp;
+    char c;
+    
+    fp = fopen(filename, "r");
+    c  = fgetc(fp);
+    deck[i]->sides[0] = c;
+    
+    while (c != EOF)
+    {
+        
+        if (c == ',' || j == 0)
+        {
+            c = fgetc(fp);
+            
+            if(c == 'a') {
+                deck[i]->special = true;
+                deck[i]->sides[j] = 'p';
+            }
+            
+            if(c == 'b') {
+                deck[i]->special = true;
+                deck[i]->sides[j] = 'V';
+            }
+            
+            if(c != 'a' && c != 'b')
+                deck[i]->sides[j] = c;
+            
+            j++;
+        }
+        
+        if (c == '\n')
+        {
+            i++;
+            j = 0;
+        }
+        
+        else
+            c = fgetc(fp);
+    }
+
+    fclose(fp);
+
+    return deck;
+}
+
+void print_tile(tile* t) {
+    printf("%c|%c|%c|%c|%c   special: %d\n", t->sides[0], t->sides[1], t->sides[2], t->sides[3], t->sides[4], (int)t->special);
+}
+
+void free_deck(tile** deck) {
+    for (int i = 0; i < N_CARDS+1; i++) {
+        free(deck[i]);
+    }
+    free(deck);
+}
+
+joueur* Joueur(uint id) {
+    joueur *J = malloc(sizeof(joueur));
+    J->points = 0;
+    J-> meeples = 7;
+    J-> id = id;
+
+    return J;
+}
 
 void color_reset(){printf("\033[0m");}
 void color_p(){printf("\033[48;5;2m");}
@@ -285,14 +327,14 @@ void print_grid_color(grid G){
 	
 	uint nbpostmp = 0;
     
-    while(empty_grid_col(G, i) == 1){
+    while(empty_grid_col(G, i) == 1 && i < N_CARDS-1){
         firstcol ++;
         i++;
     }
     
     i = lenght;
     
-    while(empty_grid_col(G, i) == 1){
+    while(empty_grid_col(G, i) == 1 && i > N_CARDS+1){
         lastcol--;
         i--;
     }
@@ -306,10 +348,10 @@ void print_grid_color(grid G){
     firstcol --;
     lastcol  ++;
 
-    for(i = 0; i < lenght; i++){
-        
+    for(i = 0; i < lenght; i++)
+    {    
         if((i < N_CARDS+offset && i > N_CARDS-offset) || 
-           (i < lenght-1 && empty_grid_row(G, i+1) == 0))
+           (i > 0 && empty_grid_row(G, i-1) == 0))
             {
             for(j = firstcol; j < lastcol+1; j++){
                 if(G[i][j] != NULL){
@@ -363,79 +405,6 @@ void print_grid_color(grid G){
             printf("\n");
         }    
     }
-}
-
-
-
-tile** readcsv(char* filename) {
-    tile **deck = malloc(sizeof(tile *) * 72);
-    for (int i = 0; i <= N_CARDS; i++)
-        deck[i] = Tile();
-    
-    int i = 0, j = 1;
-    FILE *fp;
-    char c;
-    
-    fp = fopen(filename, "r");
-    c  = fgetc(fp);
-    deck[i]->sides[0] = c;
-    
-    while (c != EOF)
-    {
-        
-        if (c == ',' || j == 0)
-        {
-            c = fgetc(fp);
-            
-            if(c == 'a') {
-                deck[i]->special = true;
-                deck[i]->sides[j] = 'p';
-            }
-            
-            if(c == 'b') {
-                deck[i]->special = true;
-                deck[i]->sides[j] = 'V';
-            }
-            
-            if(c != 'a' && c != 'b')
-                deck[i]->sides[j] = c;
-            
-            j++;
-        }
-        
-        if (c == '\n')
-        {
-            i++;
-            j = 0;
-        }
-        
-        else
-            c = fgetc(fp);
-    }
-
-    fclose(fp);
-
-    return deck;
-}
-
-void print_tile(tile* t) {
-    printf("%c|%c|%c|%c|%c   special: %d\n", t->sides[0], t->sides[1], t->sides[2], t->sides[3], t->sides[4], (int)t->special);
-}
-
-void free_deck(tile** deck) {
-    for (int i = 0; i < N_CARDS+1; i++) {
-        free(deck[i]);
-    }
-    free(deck);
-}
-
-joueur* Joueur(uint id) {
-    joueur *J = malloc(sizeof(joueur));
-    J->points = 0;
-    J-> meeples = 7;
-    J-> id = id;
-
-    return J;
 }
 
 bool is_valid_pos(grid grid, tile* tile, coord coord){
@@ -552,7 +521,7 @@ coord* get_all_available_positions(grid grid, uint* size)
 {
     coord *coo = NULL;
 
-*size = 0;
+    *size = 0;
 
     for(int i = 0; i < N_CARDS*2; i++)
         for(int j = 0; j < N_CARDS*2; j++)
@@ -603,98 +572,6 @@ coord* get_all_possible_positions(grid grid, uint *size, tile* tile){
     free(coo);
 
     return validcoo;
-}
-
-void gen_rand_game()
-{
-    grid g = Grid();
-    tile** deck = readcsv("tuiles_base_simplifiees.csv");
-    coord *coo = NULL;
-
-    uint csize = 0, 
-         i = 1, 
-         randid = 0,
-         player = 0;
-
-    joueur joueurs[5];
-    for (int i = 0; i < 5; i++) {
-        joueurs[i].id = i;
-    }
-
-    g[72][72] = deck[0];
-    deck[0] = NULL;
-
-    printf("\e[1;1H\e[2J");
-
-    for(; i < 72; i++)
-    {
-        player = (i-1)%5 + 1;
-
-        csize = 0;
-        
-        while(csize == 0)
-        {
-            rotate_tile_clockwise(deck[i]);
-            coo = get_all_possible_positions(g, &csize, deck[i]);
-        }
-        
-        print_grid_with_pos(g, coo, deck[i], csize);
-
-        randid = rand()%csize;
-
-        g[coo[randid].y][coo[randid].x] = deck[i];
-        deck[i] = NULL;
-
-        if(rand()%4 == 0) {
-            int n = rand()%5;
-            g[coo[randid].y][coo[randid].x]->meeple[n] = player;
-            g[coo[randid].y][coo[randid].x]->claimed[n] = (uint)pow(2, player);
-        }
-
-        printf("\n\n\t===> Tuile n°%d", i);
-        printf("\n\t===> Le joueur %d joue aléatoirement", player);
-        printf("\n\t===> Entrer pour continuier");
-
-        
-        //getchar();
-        printf("\e[1;1H\e[2J");
-
-        print_grid_color(g);
-
-        printf("\n\n\t===> Tuile n°%d", i);
-        printf("\n\t===> Le joueur %d joue aléatoirement", player);
-        
-        bool road = false;
-        for (int i = 0; i < 4; i++) {
-            if (g[coo[randid].y][coo[randid].x]->sides[i] == 'r')
-                road = true;
-        }
-
-        if (road) {
-            int* points = check_road(g, coo[randid], joueurs);
-            
-            for (int i = 0; i < 5; i++) {
-                if (points[i] > 0) {
-                    printf("\n\tjoueur %d a gagner %d points", i, points[i]);
-                    getchar();
-                }
-            }
-            free(points);
-        }
-
-        printf("\n\t===> Entrer pour continuier");
-
-
-        
-        //getchar();
-        printf("\e[1;1H\e[2J");
-        free(coo);
-    }
-
-    print_grid_color(g);
-
-    free_grid(g);
-    free_deck(deck);
 }
 
 bool is_struct_closed(grid G, int i, int j, uint *score, char c, int side)
@@ -809,11 +686,522 @@ void close_stuct(grid G, int i, int j, uint score, char c, int side, joueur* p[5
         }
 }
 
-int main() {
-    srand(1); // bug
+tile** deck_shuffle(tile** deck) {
+    int i, j, k;
+    tile* tmp;
+    for (i = 1; i < (N_CARDS); i++) {
+        j = rand() % (N_CARDS-1)+1;
+        k = rand() % (N_CARDS-1)+1;
+        tmp = deck[j];
+        deck[j] = deck[k];
+        deck[k] = tmp;
+    }
+    return deck;
+}
 
+void gen_rand_game()
+{
+    grid grid = Grid();
+    tile** deck = readcsv("tuiles_base_simplifiees.csv");
+    grid[72][72] = deck[0];
+    deck[0] = NULL;
+    deck = deck_shuffle(deck);
+    coord *coo = NULL;
+
+    uint csize = 0, 
+         i = 1, 
+         randid = 0;
+
+    joueur* player = NULL;
+
+    printf("\e[1;1H\e[2J");
+
+    joueur** Joueurs = malloc(sizeof(joueur*)*5);
+    for (int i = 0; i < 5; i++) {
+        Joueurs[i] = malloc(sizeof(joueur));
+        Joueurs[i]->id = i+1;
+        Joueurs[i]->points = 0;
+        Joueurs[i]->meeples = 7;
+    }
+
+    for(; i < 72; i++)
+    {
+        player = Joueurs[(i-1)%5];
+
+        csize = 0;
+        
+        while(csize == 0)
+        {
+            rotate_tile_clockwise(deck[i]);
+            coo = get_all_possible_positions(grid, &csize, deck[i]);
+        }
+
+        system("clear");
+        print_grid_with_pos(grid, coo, deck[i], csize);
+
+        randid = rand()%csize;
+
+        
+        
+
+        //if(rand()%4 == 0)
+        //    grid[coo[randid].y][coo[randid].x]->meeple[rand()%5] = player;
+        
+        printf("\n\n\t===> Tuile n°%d", i);
+        printf("\n\t===> Le joueur %d joue aléatoirement", player->id);
+        printf("\n\n\t===> Entrer pour continuier"); // continuier moment
+        getchar();
+
+        int length = 0;
+        int** points_won = place_tile(grid, coo[randid], deck[i], Joueurs, &length);
+        
+
+        system("clear");
+        printf("\e[1;1H\e[2J");
+        print_grid_color(grid);
+        printf("\n\n\t===> Tuile n°%d", i);
+        printf("\n\t===> Le joueur %d joue aléatoirement", player->id);
+
+        for (int i = 0; i < length; i++) {
+            printf("\n\n\t===> Le joueur %d a gagné %d points", points_won[i][0], points_won[i][1]);
+        }
+
+        printf("\n\n\t===> Entrer pour continuier");
+        getchar();
+        
+        // score = 0;
+        // for(int k = 0; k < 4; k ++)
+        //     if(deck[i]->sides[k] == 'V')
+        //         test = is_town_closed(grid, coo[randid].y, coo[randid].x, &score, k);
+        
+        
+
+        // printf("\e[1;1H\e[2J");
+        // print_grid_color(grid);
+        // printf("\n\n\t===> score : %d", score);
+        // printf("\n\t===> close : %d", test);
+        // getchar();
+        // clear_tmpmark(grid);
+
+        free(coo);
+        deck[i] = NULL;
+        printf("\e[1;1H\e[2J");
+    }
+
+    print_grid_color(grid);
+
+    free_grid(grid);
+    free_deck(deck);
+}
+
+//void gen_rand_struct(int seed, char c)
+//{
+//    srand(seed);
+//    grid grid = Grid();
+//    tile** deck = readcsv("tuiles_base_simplifiees.csv");
+//    coord *coo = NULL;
+//
+//    uint csize = 0, 
+//         i = 1, 
+//         randid = 0,
+//         player = 0,
+//         score  = 0;
+//
+//    grid[72][72] = deck[0];
+//    deck[0] = NULL;
+//
+//
+//    printf("\e[1;1H\e[2J");
+//
+//    for(; i < 72; i++)
+//    {
+//        player = (i-1)%5 + 1;
+//        csize = 0;
+//        
+//        while(deck[i]->sides[0] != c &&
+//              deck[i]->sides[1] != c &&
+//              deck[i]->sides[2] != c &&
+//              deck[i]->sides[3] != c &&
+//              deck[i]->sides[4] != c &&
+//              i < 72)
+//              i++;
+//
+//        while(csize == 0)
+//        {
+//            rotate_tile_clockwise(deck[i]);
+//            coo = get_all_possible_positions(grid, &csize, deck[i]);
+//        }
+//
+//        randid = rand()%csize;
+//
+//        grid[coo[randid].y][coo[randid].x] = deck[i];
+//        
+//        //if(rand()%4 == 0)
+//        //    grid[coo[randid].y][coo[randid].x]->meeple[rand()%5] = player;
+//        
+//        // score = 0;
+//        // for(int k = 0; k < 4; k ++)
+//        //     if(deck[i]->sides[k] == 'V')
+//        //         test = is_town_closed(grid, coo[randid].y, coo[randid].x, &score);
+//
+//        free(coo);
+//        deck[i] = NULL;
+//    }
+//    
+//    bool    w[5] = {0};
+//    joueur *p[5];
+//
+//    uint k;
+//
+//    for(k = 0; k < 5; k++)
+//        p[k] = Joueur(k);
+//
+//    if(seed == 34 && c == 'V')
+//    {
+//        grid[70][70] = grid[72][69];
+//        grid[72][69] = NULL;
+//        grid[70][69]->meeple[2] = 2;
+//        p[1]->meeples --;
+//
+//        grid[70][70]->meeple[2] = 4;
+//        p[3]->meeples --;
+//
+//        grid[71][71]->meeple[4] = 2;
+//        p[1]->meeples --;
+//
+//        printf("\n\n\t ===> closed : %d", is_struct_closed(grid, 70, 70, &score, 'V', 2));
+//        printf("\n\n\t ===> score  : %d\n", score);
+//        clear_tmpmark(grid);
+//        print_grid_color(grid);
+//
+//        close_stuct(grid, 70, 70, score, 'V', 2, p, w);
+//        //clear_tmpmark(grid);
+//        //print_grid_color(grid);
+//        for(k = 0; k < 5; k++)
+//            printf("\n\t===> Joueur %d : score = %d, meeple = %d\n", k+1, p[k]->points, p[k]->meeples);
+//    }
+//
+//    if(seed == 2 && c == 'r')
+//    {
+//        //grid[72][72]->istemp = 1;
+//        printf("\n\n\t ===> closed : %d", is_struct_closed(grid, 73, 76, &score, 'r', 1));
+//        printf("\n\n\t ===> score  : %d\n", score);
+//    }
+//    
+//    // print_grid_color(grid);
+//
+//    free_grid(grid);
+//    free_deck(deck);
+//}
+
+//test
+int check_abbey(grid g, coord c, joueur* joueurs[5], int* winner)
+{
+    // voir si la tuile posé compte
+    int points = 0;
+    int i, j;
+    int x = c.x, y = c.y;
+    for (i = -1; i == 1; i++)
+    {
+        for (j = -1; j == 1; j++)
+        {
+            if (g[y+i][x+j] != NULL)
+            {
+                if ((g[y+i][x+j]->sides[4] == 'p') && (g[y+i][x+j]->special == true))
+                {
+                    if (g[y+i][x+j]->meeple[4] != -1) { // can be removed (probably)
+                        for (int k = 0; k < 5; k++)
+                            if (g[y+i][x+j]->meeple[4] == joueurs[k]->id) {
+                                joueurs[k]->points++;   
+                                points++;
+                            }
+                    }
+                }
+            }
+        }
+    }
+    return points;
+}
+
+int** place_tile(grid g, coord c, tile* t, joueur *j[5], int* length) {
+    g[c.y][c.x] = t;
+
+    int** ret = malloc(0);
+    *length = 0;
+
+    for (int i = 0; i < 4; i++) {
+        if (g[c.y][c.x]->sides[i] == 'r') {
+            uint pts = 0;
+            if (is_struct_closed(g, c.y, c.x, &pts, 'r', i)) {
+                bool winners[5] = {false};
+                close_stuct(g, c.y, c.x, pts, 'r', i, j, winners);
+
+                for (int k = 0; k < 5; k++)
+                    if (winners[k]) {
+                        ret = realloc(ret, ((*length) + 1) * sizeof(int*));
+                        ret[*length] = malloc(2 * sizeof(int));
+                        ret[*length][0] = k;
+                        ret[*length][1] = pts;
+                        (*length)++;
+                    }
+                        
+
+            }
+        }
+        
+        if (g[c.y][c.x]->sides[i] == 'V') {
+            uint pts = 0;
+            if (is_struct_closed(g, c.y, c.x, &pts, 'V', i)) {
+                bool winners[5] = {false};
+                close_stuct(g, c.y, c.x, pts, 'V', i, j, winners);
+
+                for (int k = 0; k < 5; k++)
+                    if (winners[k]) {
+                        ret = realloc(ret, ((*length) + 1) * sizeof(int*));
+                        ret[*length] = malloc(2 * sizeof(int));
+                        ret[*length][0] = k;
+                        ret[*length][1] = pts;
+                        (*length)++;
+                    }
+
+                // handle display of points here
+
+            }
+        }
+        clear_tmpmark(g);
+    }
     
-    gen_rand_game();
+    if (g[c.y][c.x]->sides[4] == 'a') {
+        int winner;
+        int pts = check_abbey(g, c, j, &winner);
 
+        if (ret > 0) {
+            ret = realloc(ret, ((*length) + 1) * sizeof(int*));
+            ret[*length] = malloc(2 * sizeof(int));
+            ret[*length][0] = winner;
+            ret[*length][1] = pts;
+            (*length)++;
+        }
+
+    }
+
+    return ret;
+}
+
+bool streq(char* a, char* b) { // mildly cursed
+    if (strlen(a) != strlen(b))
+        return false;
+    for (int i = 0; i < strlen(a); i++)
+        if (a[i] != b[i])
+            return false;
+    return true;
+}
+
+void strip_newline(char *str) { // very cursed
+    int i = 0;
+    while (str[i] != '\0') {
+        if (str[i] == '\n') {
+            str[i] = '\0';
+            break;
+        }
+        i++;
+    }
+}
+
+void play_game() {
+    grid grid = Grid();
+    tile** deck = readcsv("tuiles_base_simplifiees.csv");
+    grid[72][72] = deck[0];
+    deck[0] = NULL;
+    deck = deck_shuffle(deck);
+    coord *coo = NULL;
+
+    uint csize = 0, 
+         i = 1;
+    int selected_tile;
+    joueur* player = NULL;
+
+    printf("\e[1;1H\e[2J");
+
+    joueur** Joueurs = malloc(sizeof(joueur*)*5);
+    for (int i = 0; i < 5; i++) {
+        Joueurs[i] = malloc(sizeof(joueur));
+        Joueurs[i]->id = i+1;
+        Joueurs[i]->points = 0;
+        Joueurs[i]->meeples = 7;
+    }
+
+    for(; i < 72; i++)
+    {
+        bool ischarvalid = false;
+        do {
+            player = Joueurs[(i-1)%5];
+
+            csize = 0;
+            
+            int counter = 0;
+            while((csize == 0) && (counter < 5))
+            {
+                rotate_tile_clockwise(deck[i]);
+                coo = get_all_possible_positions(grid, &csize, deck[i]);
+                counter++;
+            }
+            if (counter == 5) {
+                perror("cannot find a place for the tile");
+                exit(1);
+            }
+
+            system("clear");
+            print_grid_with_pos(grid, coo, deck[i], csize);
+
+            
+            // TODO
+            // --rotations-- // done
+            // make sure meeple placement is legal
+            // abbeys dont work ffs
+            
+            
+
+            //if(rand()%4 == 0)
+            //    grid[coo[randid].y][coo[randid].x]->meeple[rand()%5] = player;
+            
+            printf("\n\n\t===> Tuile n°%d", i);
+            printf("\n\t===> Le joueur %d joue", player->id);
+            printf("\n\n\t===> Input: "); // continuier moment
+            char str[256];
+            scanf("%s", str);
+            getchar();
+            strip_newline(str); 
+
+            if (strlen(str) == 1) {
+                char c = str[0];
+                if ((c >= 'a') && (c <= 'z')) {
+                    selected_tile = c - 'a';
+                    ischarvalid = true;
+                } else if ((c >= 'A') && (c <= 'Z')) {
+                    selected_tile = c - 'A';
+                    ischarvalid = true;
+                }
+
+                if (!ischarvalid) {
+                    printf("\n\t===> Entrer une position valide");
+                    printf("\n\n\t===> Entrez help pour afficher l'aide");
+                    printf("\n\n\t===> Appuyez sur enter pour continuer");
+                    getchar();
+                }
+            } else if (streq(str, "exit")) {
+                exit(0);
+            } else if (streq(str, "rotate")) {
+                uint csize = 0;
+                while(csize == 0)
+                {
+                    rotate_tile_clockwise(deck[i]);
+                    coo = get_all_possible_positions(grid, &csize, deck[i]);
+                    counter++;
+                }
+            } else if (streq(str, "points")) {
+                for (int i = 0; i < 5; i++)
+                    printf("\n\t===> Le joueur %d a %d points", i+1, Joueurs[i]->points);
+                printf("\n\n\t===> Appuyez sur enter pour continuer");
+                getchar();
+            } else if (streq(str, "help")) {
+                printf("\n\tlettre: lettre de la tuile que vous souhaitez poser\n\trotate: tourne la tuile\n\tpoints: affiche les points des joueurs\n\texit: quitte le jeu\n\n");                
+                printf("\n\n\t===> Appuyez sur enter pour continuer");
+                getchar();
+            } else {
+                printf("\n\t===> Entrez une commande valide");
+                printf("\n\n\t===> Entrez help pour afficher l'aide");
+                printf("\n\n\t===> Appuyez sur enter pour continuer");
+                getchar();
+            }
+        } while (!ischarvalid);
+        int length = 0;
+        int** points_won = place_tile(grid, coo[selected_tile], deck[i], Joueurs, &length);
+        
+        ischarvalid = false;
+        printf("\n\n\tvous avez %d meeples", player->meeples);
+        while (!ischarvalid && player->meeples > 0) {
+            printf("\n\tsouhaitez vous placer un meeple? (y/n): ");
+            char c = getchar();
+            while(c == '\n')
+                c = getchar();
+            if (c == 'y') {
+                ischarvalid = true;
+                printf("\n\t===> Entrer une position (up, down, left, right, center): ");
+                char str[10];
+                scanf("%s", str);
+                getchar();
+                if (str[0] == 'u') {
+                    grid[coo[selected_tile].y][coo[selected_tile].x]->meeple[0] = player->id;
+                    player->meeples--;
+                } else if (str[0] == 'r' || str[0] == 'R') {
+                    grid[coo[selected_tile].y][coo[selected_tile].x]->meeple[1] = player->id;
+                    player->meeples--;
+                } else if (str[0] == 'd' || str[0] == 'D') {
+                    grid[coo[selected_tile].y][coo[selected_tile].x]->meeple[2] = player->id;
+                    player->meeples--;
+                } else if (str[0] == 'l' || str[0] == 'L') {
+                    grid[coo[selected_tile].y][coo[selected_tile].x]->meeple[3] = player->id;
+                    player->meeples--;
+                } else if (str[0] == 'c' || str[0] == 'C') {
+                    grid[coo[selected_tile].y][coo[selected_tile].x]->meeple[4] = player->id;
+                    player->meeples--;
+                } else {
+                    printf("\n\t===> Entrer une position valide");
+                    ischarvalid = false;
+                }
+                
+            }
+            else if (c == 'n') {
+                ischarvalid = true;
+            }
+            else {
+                printf("\n\t===> Entrer une position valide");
+                ischarvalid = false;
+            }
+        }
+        system("clear");
+        printf("\e[1;1H\e[2J");
+        print_grid_color(grid);
+        printf("\n\n\t===> Tuile n°%d", i);
+        printf("\n\t===> Le joueur %d joue", player->id);
+
+        for (int i = 0; i < length; i++) {
+            printf("\n\n\t===> Le joueur %d a gagné %d points", points_won[i][0], points_won[i][1]);
+        }
+
+        printf("\n\n\t===> Entrer pour continuier");
+        getchar();
+        
+        // score = 0;
+        // for(int k = 0; k < 4; k ++)
+        //     if(deck[i]->sides[k] == 'V')
+        //         test = is_town_closed(grid, coo[randid].y, coo[randid].x, &score, k);
+        
+        
+
+        // printf("\e[1;1H\e[2J");
+        // print_grid_color(grid);
+        // printf("\n\n\t===> score : %d", score);
+        // printf("\n\t===> close : %d", test);
+        // getchar();
+        // clear_tmpmark(grid);
+
+        free(coo);
+        deck[i] = NULL;
+        printf("\e[1;1H\e[2J");
+    }
+
+    print_grid_color(grid);
+
+    free_grid(grid);
+    free_deck(deck);
+}
+
+int main()
+{
+    srand(time(NULL));
+        
+    play_game();
 
 }

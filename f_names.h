@@ -3,14 +3,13 @@
 #include <stdbool.h>
 
 #define N_CARDS 72
-#define players 2
+#define N_PLAYERS 2
 
 typedef unsigned int uint;
 
 typedef struct tile_t {
     char sides[5]; // c = Champ, V = Ville, c = Champs, m = Monastère, v = Village, B = blazon
-    uint meeple[5];
-    uint claimed[5];
+    int meeple[5];
     bool special;
     bool closed[4];
     bool istemp;
@@ -46,7 +45,7 @@ int empty_grid_row(grid, int); // fait
 
 void basic_print_grid(grid); // fait
 
-void print_grid_color(grid); // todo AC
+void print_grid_color(grid); // fait ?
 
 //void add_tile_to_grid(grid, tile*); // pas nécassaire 
 
@@ -60,23 +59,23 @@ joueur* Joueur(uint id); // fait
 
 void gen_rand_valid_grill(grid, tile**); // fait
 
-coord* get_all_available_positions(grid, uint* size); // todo samy
+coord* get_all_available_positions(grid, uint* size); // fait
 
 bool is_valid_pos(grid, tile*, coord); // fait
 
-coord* get_all_possible_possitions(grid, tile*); // 
+coord* get_all_possible_possitions(grid, tile*); // fait
 
 void print_grid_with_pos(grid, coord*, tile*, uint size); // fait
 
-void place_tile(grid, coord, tile); //
+int** place_tile(grid, coord, tile*, joueur**, int*); // todo AB
 
-int* check_road(grid, coord, joueur[5]); // todo AB
+int* check_road(grid, coord, joueur[5]); // fait
 
-int* check_town(grid, coord, joueur[5]); //
+int* check_town(grid, coord, joueur[5]); // fait
 
-int check_abbey(grid, coord, joueur[5]); //
+int check_abbey(grid, coord, joueur**, int*); // non testé
 
-uint get_road_points(grid, coord); //
+uint get_road_points(grid, coord); // 
 
 uint get_town_points(grid, coord); //
 
