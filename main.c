@@ -901,21 +901,19 @@ int check_abbey(grid g, coord c, joueur* joueurs[5], int* winner)
     int points = 0;
     int i, j;
     int x = c.x, y = c.y;
-    for (i = -1; i == 1; i++)
+    for (i = -1; i <= 1; i++)
     {
-        for (j = -1; j == 1; j++)
+        for (j = -1; j <= 1; j++)
         {
             if (g[y+i][x+j] != NULL)
             {
                 if ((g[y+i][x+j]->sides[4] == 'p') && (g[y+i][x+j]->special == true))
                 {
-                    if (g[y+i][x+j]->meeple[4] != -1) { // can be removed (probably)
-                        for (int k = 0; k < 5; k++)
-                            if (g[y+i][x+j]->meeple[4] == joueurs[k]->id) {
-                                joueurs[k]->points++;   
-                                points++;
-                            }
-                    }
+                    for (int k = 0; k < 5; k++)
+                        if (g[y+i][x+j]->meeple[4] == joueurs[k]->id) {
+                            joueurs[k]->points++;   
+                            points++;
+                        }   
                 }
             }
         }
@@ -1077,10 +1075,20 @@ void play_game() {
                 char c = str[0];
                 if ((c >= 'a') && (c <= 'z')) {
                     selected_tile = c - 'a';
-                    ischarvalid = true;
+                    if (selected_tile > csize) {
+                        printf("\n\t===> La tuile %c n'existe pas\n", c);
+                        ischarvalid = false;
+                    }
+                    else 
+                        ischarvalid = true;
                 } else if ((c >= 'A') && (c <= 'Z')) {
                     selected_tile = c - 'A';
-                    ischarvalid = true;
+                    if (selected_tile > csize) {
+                        printf("\n\t===> La tuile %c n'existe pas\n", c);
+                        ischarvalid = false;
+                    }
+                    else
+                        ischarvalid = true;
                 }
 
                 if (!ischarvalid) {
