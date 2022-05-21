@@ -65,7 +65,10 @@ The requirements to build and play this game are:
 
 
 to install these requirements you can run this command:
+<<<<<<< HEAD
 
+=======
+>>>>>>> f4f98dafbba240f1b8cacc537fd6653ea4a10347
     sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
 #### building for linux
@@ -264,6 +267,8 @@ Les pré-requis pour compiler et jouer ce jeu sont:
 
 
 
+
+
 Pour installer ces pré-requis vous pouvez exécuter cette commande:
 
     sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
@@ -323,13 +328,13 @@ Le gameplay loop consiste a tourner une tuile pour trouver le meilleur endroit p
 La partie se termine quand toutes les tuiles sont placées.
 
     Touches gauche/droite pour tourner la tuile.
-
+    
     Clic droit pour faire défiler la caméra.
-
+    
     Clic gauche pour placer la tuile (seulement si vous survolez un emplacement valide).
-
+    
     Molette ou Touches z/s pour zoomer.
-
+    
     Echap pour revenir au menu principal. (!Attention! cela réinitialise la partie!)
 
 
