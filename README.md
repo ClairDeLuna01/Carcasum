@@ -2,61 +2,62 @@
 
 - [Carcasum](#carcasum)
   - [English](#english)
-    - [how to build](#how-to-build)
-      - [requirements](#requirements)
-      - [building for linux](#building-for-linux)
-        - [make final build](#make-final-build)
-        - [make debug build](#make-debug-build)
-      - [building for windows](#building-for-windows)
-        - [make final build](#make-final-build-1)
-        - [make debug build](#make-debug-build-1)
-    - [how to play](#how-to-play)
-      - [run the game](#run-the-game)
+    - [How to build](#how-to-build)
+      - [Requirements](#requirements)
+      - [Building for linux](#building-for-linux)
+        - [Make final build](#make-final-build)
+        - [Make debug build](#make-debug-build)
+      - [Building for windows](#building-for-windows)
+        - [Make final build](#make-final-build-1)
+        - [Make debug build](#make-debug-build-1)
+    - [How to play](#how-to-play)
+      - [Run the game](#run-the-game)
       - [Controls](#controls)
-        - [main menu](#main-menu)
-        - [game](#game)
-    - [game rules](#game-rules)
-      - [basic rules](#basic-rules)
-      - [special cases](#special-cases)
-    - [credits](#credits)
-      - [graphics](#graphics)
-      - [music](#music)
-      - [code](#code)
-        - [game core](#game-core)
-        - [game graphics](#game-graphics)
+        - [Main menu](#main-menu)
+        - [Game](#game)
+    - [Game rules](#game-rules)
+      - [Basic rules](#basic-rules)
+      - [Special cases](#special-cases)
+    - [Credits](#credits)
+      - [Graphics](#graphics)
+      - [Music](#music)
+      - [Code](#code)
+        - [Game core](#game-core)
+        - [Game graphics](#game-graphics)
         - [AI code](#ai-code)
   - [Français](#français)
     - [Compilation](#compilation)
-      - [pre-requis](#pre-requis)
-      - [compilation pour linux](#compilation-pour-linux)
-        - [version finale](#version-finale)
-        - [version debug](#version-debug)
-      - [compilation pour windows](#compilation-pour-windows)
-        - [version finale](#version-finale-1)
-        - [version debug](#version-debug-1)
-    - [comment jouer](#comment-jouer)
-      - [lancer le jeu](#lancer-le-jeu)
+      - [Pré-requis](#pré-requis)
+      - [Compilation pour linux](#compilation-pour-linux)
+        - [Version finale](#version-finale)
+        - [Version debug](#version-debug)
+      - [Compilation pour windows](#compilation-pour-windows)
+        - [Version finale](#version-finale-1)
+        - [Version debug](#version-debug-1)
+    - [Comment jouer](#comment-jouer)
+      - [Lancer le jeu](#lancer-le-jeu)
       - [Contrôles](#contrôles)
-        - [menu principal](#menu-principal)
-        - [partie](#partie)
-    - [règles du jeu](#règles-du-jeu)
-      - [règles de base](#règles-de-base)
-      - [regles specifiques](#regles-specifiques)
-    - [credits](#credits-1)
-      - [graphiques](#graphiques)
-      - [musique](#musique)
-      - [code](#code-1)
-        - [partie basique (systemes du jeu)](#partie-basique-systemes-du-jeu)
-        - [graphiques](#graphiques-1)
+        - [Menu principal](#menu-principal)
+        - [Partie](#partie)
+    - [Règles du jeu](#règles-du-jeu)
+      - [Règles de base](#règles-de-base)
+      - [Règles spécifiques](#règles-spécifiques)
+    - [Crédits](#crédits)
+      - [Graphismes](#graphismes)
+      - [Musique](#musique)
+      - [Code](#code-1)
+        - [Partie basique (systemes du jeu)](#partie-basique-systemes-du-jeu)
+        - [Graphiques](#graphiques)
         - [IA](#ia)
 
 
 
 
 
+
 ## English
-### how to build
-#### requirements
+### How to build
+#### Requirements
 The requirements to build and play this game are:
 
     - libsdl2-dev 
@@ -65,7 +66,7 @@ The requirements to build and play this game are:
     - libsdl2-mixer-dev
 
 
-to install these requirements you can run this command:
+To install these requirements you can run this command:
 
     sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
@@ -79,53 +80,53 @@ For Windows you will need to download the dev libraries files from the websites 
 - [libsdl2-ttf-dev](https://github.com/libsdl-org/SDL_ttf)
 - [libsdl2-mixer-dev](https://www.libsdl.org/projects/SDL_mixer/)
 
-and place the contents in your compiler's installation folder.
+And place the contents in your compiler's installation folder.
 
-#### building for linux
-##### make final build
+#### Building for linux
+##### Make final build
     make install
-##### make debug build
+##### Make debug build
     make
 
-#### building for windows
-##### make final build
+#### Building for windows
+##### Make final build
     make install-win
-##### make debug build
+##### Make debug build
     make windows
 
 
 
-### how to play
-#### run the game
+### How to play
+#### Run the game
     ./Carcasum
 #### Controls
-    +/- or m/p keys to change the music volume.
-##### main menu
+    + / - OR M / P keys to change the music volume.
+##### Main menu
 in this menu you can select the number of players as well as the number of players controlled by the AI.
 
-    up/down arrow keys to select the number of players/AI.
+    Up / Down arrow keys to select the number of players / AI.
 
-    left/right arrow keys to move the selection cursor.
+    Left / Right arrow keys to move the selection cursor.
 
     Enter to start the game.
-##### game
+##### Game
 The gameplay loop consists of rotating a tile to find the best spot to place it, and then placing it and finally placing a meeple if possible.
 
 The game ends when all the tiles are placed.
 
-    left/right arrow keys to rotate the tile.
+    Left / Right arrow keys to rotate the tile.
 
-    right click to pan the camera.
+    Right click to pan the camera.
 
-    left  click to place the tile (only when hovering over a valid spot).
+    Left  click to place the tile (only when hovering over a valid spot).
 
-    mouse wheel or z / s keys to zoom in/out.
+    Mouse wheel or Z / S keys to zoom in / out.
 
-    escape to go back to the main menu. (!warning! this will reset the game!)
+    Escape to go back to the main menu. (!warning! this will reset the game!)
 
 
-### game rules
-#### basic rules
+### Game rules
+#### Basic rules
 The game is played with a 72 (usually) card deck.
 
 The game ends when all the tiles are placed.
@@ -169,9 +170,9 @@ The points gained for each tile depend on the type of structure:
 - Road: 2 points
 
 
-Towns can also have a bonus point per tile if it the tile has castle in the middle. 
+Towns can also earn two bonus points per tile if it the tile has castle in the middle. 
 
-The bonus point is added to the total points of the town when it is closed for each tile that has a castle.
+The bonus points are added to the total points of the town when it is closed for each tile that has a castle.
 
 
 
@@ -179,23 +180,25 @@ When the game is over, points are counted for each incomplete structure.
 
 Each tile in the structure gives one point.
 
+Towns get one additional point for each tile that has a castle in the middle.
 
 
-#### special cases
+
+#### Special cases
 
 If there are multiple meeples on a structure when it is closed (this can happen when two different structures with a meeple are are connected by a new tile) the points go to the player with the most meeples on the structure. If the number of meeples on the structure is the same for both players, both players get the points. 
 
 
 
-### credits
+### Credits
 
-#### graphics
+#### Graphics
 
     Arthur Chateauneuf
 
 
 
-#### music
+#### Music
 
 Main theme:
 
@@ -239,9 +242,9 @@ Game sounds:
 
 
 
-#### code
+#### Code
 
-##### game core
+##### Game core
 
     Arthur Bossu
 
@@ -249,13 +252,13 @@ Game sounds:
 
     Samy Belhadri
 
-##### game graphics
+##### Game graphics
 
     Arthur Chateauneuf
 
 ##### AI code
 
-    Arthur Chateauneuf
+    Arthur Bossu
 
 
 
@@ -263,7 +266,7 @@ Game sounds:
 
 ### Compilation
 
-#### pre-requis
+#### Pré-requis
 
 Les pré-requis pour compiler et jouer ce jeu sont:
 
@@ -285,25 +288,25 @@ Pour installer ces pré-requis vous pouvez exécuter cette commande:
 
 
 
-#### compilation pour linux
+#### Compilation pour linux
 
-##### version finale
+##### Version finale
 
     make install
 
-##### version debug
+##### Version debug
 
     make
 
 
 
-#### compilation pour windows
+#### Compilation pour windows
 
-##### version finale
+##### Version finale
 
     make install-win
 
-##### version debug
+##### Version debug
 
     make windows
 
@@ -311,47 +314,47 @@ Pour installer ces pré-requis vous pouvez exécuter cette commande:
 
 
 
-### comment jouer
+### Comment jouer
 
-#### lancer le jeu
+#### Lancer le jeu
 
     ./Carcasum
 
 #### Contrôles
 
-    +/- ou m/p pour changer le volume de la musique.
+    + / - ou M / P pour changer le volume de la musique.
 
-##### menu principal
+##### Menu principal
 
 Dans ce menu vous pouvez choisir le nombre de joueurs et le nombre de joueurs contrôlés par l'IA.
 
-    Touches haut/bas pour choisir le nombre de joueurs/IA.
+    Touches haut / bas pour choisir le nombre de joueurs / IA.
 
-    Touches gauche/droite pour déplacer le curseur.
+    Touches gauche / droite pour déplacer le curseur.
 
     Entrée pour commencer la partie.
 
-##### partie
+##### Partie
 
 Le gameplay loop consiste a tourner une tuile pour trouver le meilleur endroit pour la placer, puis la placer et enfin placer un meeple si possible.
 
 La partie se termine quand toutes les tuiles sont placées.
 
-    Touches gauche/droite pour tourner la tuile.
+    Flèches gauche / droite pour tourner la tuile.
     
     Clic droit pour faire défiler la caméra.
     
     Clic gauche pour placer la tuile (seulement si vous survolez un emplacement valide).
     
-    Molette ou Touches z/s pour zoomer.
+    Molette ou Touches Z / S pour zoomer.
     
     Echap pour revenir au menu principal. (!Attention! cela réinitialise la partie!)
 
 
 
-### règles du jeu
+### Règles du jeu
 
-#### règles de base
+#### Règles de base
 
 Le jeu est joué avec un deck de 72 cartes (habituellement).
 
@@ -395,31 +398,31 @@ Les points gagnés par tuile dépendent du type de structure:
 
 
 
-Les villes peuvent aussi donner un point bonus si la tuile contient un château.
+Les villes peuvent aussi donner deux points bonus si la tuile contient un château.
 
 Le bonus est ajouté au total des points de la ville quand elle est complétée pour chaque tuile qui contient un château.
 
 
 
 Quand la partie est terminée, les joueurs gagnent un point par tuile pour chaque structures non complétées sur lesquels ils ont un meeple.
+Si la tuile est une ville avec un champ, le joueur gagne 1 point suplémentaire.
 
 
-
-#### regles specifiques
+#### Règles spécifiques
 
 Si il y a plusieurs meeples sur une seule structure lorsqu'elle est fermée, (Ceci peut arriver lorsque deux structures séparées ayant un meeple sont jointes par une nouvelle tuile) le joueur avec le plus de meeple sur la structure gagne les points. Si il y a égalité, les deux joueurs gagnent les points.
 
 
 
-### credits
+### Crédits
 
-#### graphiques
+#### Graphismes
 
     Arthur Chateauneuf
 
 
 
-#### musique
+#### Musique
 
 Thème principal:
 
@@ -463,9 +466,9 @@ Sons de jeu:
 
 
 
-#### code
+#### Code
 
-##### partie basique (systemes du jeu)
+##### Partie basique (systemes du jeu)
 
     Arthur Bossu
 
@@ -473,7 +476,7 @@ Sons de jeu:
 
     Samy Belhadri
 
-##### graphiques
+##### Graphiques
 
     Arthur Chateauneuf
 
