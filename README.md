@@ -58,6 +58,7 @@
 ### how to build
 #### requirements
 The requirements to build and play this game are:
+
     libsdl2-dev 
     libsdl2-image-dev 
     libsdl2-ttf-dev 
@@ -65,6 +66,7 @@ The requirements to build and play this game are:
 
 
 to install these requirements you can run this command:
+
     sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
 #### building for linux
