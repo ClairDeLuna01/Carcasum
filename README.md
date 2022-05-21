@@ -73,10 +73,11 @@ Note: if you are using a linux distro that is not Ubuntu or Debian, you may need
 
 
 For Windows you will need to download the dev libraries files from the websites listed below.
-    - [libsdl2-dev](https://www.libsdl.org/download-2.0.php)
-    - [libsdl2-image-dev](https://www.libsdl.org/projects/SDL_image/)
-    - [libsdl2-ttf-dev](https://github.com/libsdl-org/SDL_ttf)
-    - [libsdl2-mixer-dev](https://www.libsdl.org/projects/SDL_mixer/)
+
+- [libsdl2-dev](https://www.libsdl.org/download-2.0.php)
+- [libsdl2-image-dev](https://www.libsdl.org/projects/SDL_image/)
+- [libsdl2-ttf-dev](https://github.com/libsdl-org/SDL_ttf)
+- [libsdl2-mixer-dev](https://www.libsdl.org/projects/SDL_mixer/)
 
 and place the contents in your compiler's installation folder.
 
