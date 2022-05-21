@@ -39,12 +39,12 @@
 #define OTHER_ABBEY_SUB             10                                  // points to subtract if the tile is subtracting points for the player via an abbey
 #define DISINCENTIVIZE_NEW_STRUCT   10                                  // diviser for placing a new structure when the agent has no meeples left
 // Others Game Const                
-#define TimeBeforeEventLogDisapear  6                                   // time in seconds before an event log disapears
+#define TimeBeforeEventLogDisapear  6000                                   // time in milliseconds before an event log disapears
 #define Tile_texture_size 64                                            // height (and width since tiles are square) in pixels of the texture of a tile (ressources/tile)
     
-uint N_CARDS = 72;                                                      // the total nomber of tile in the deck, see readcsv for more info
-    
 typedef unsigned int uint;                                              // unsigned integer type
+    
+uint N_CARDS = 72;                                                      // the total nomber of tile in the deck, see readcsv for more info
     
 //////// Custom Struct              
     typedef struct tile_t                                               // struct that represents a tile

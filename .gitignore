@@ -22,7 +22,7 @@
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects
 *.so
 *.so.*
 *.dylib
@@ -51,5 +51,5 @@ Mkfile.old
 dkms.conf
 a.exe.stackdump
 settings.json
-Carcassone
-Carcassone.exe
+Carcasum
+Carcasum.exe

@@ -12,60 +12,28 @@
 #include <SDL2/SDL_mixer.h>
 #include <limits.h>
 
-// Game State
-#define GameState_QUIT           0
-#define GameState_MAIN_MENU      1
-#define GameState_MAIN_MENU_INIT 2
-#define GameState_START          8
-#define GameState_CHECK_TILE     9
-#define GameState_PLACE_TILE     10
-#define GameState_PLACE_MEEPLE   11
-#define GameState_AI_TURN        12
-#define GameState_INIT_END       13
-#define GameState_END            14
-// Game Event
-#define GameEvent_Points_abbey              0
-#define GameEvent_Complete_abbey            1
-#define GameEvent_Complete_city             2
-#define GameEvent_Complete_roads            3
-#define GameEvent_MeepleBack_roads          4
-#define GameEvent_MeepleBack_city           5
-#define GameEvent_Points_IncompleteStruct   6
-// AI
-#define SELF_STRUCT_COMPLETE_MULT   30  // multiplier for completing structures belonging to the Agent
-#define SELF_STRUCT_INCOMPLETE_MULT 15  // multiplier for incomplete structures belonging to the Agent
-#define OPP_STRUCT_COMPLETE_MULT    8   // multiplier for completing structures belonging to the Opponent
-#define OPP_STRUCT_INCOMPLETE_MULT  4   // multiplier for incomplete structures belonging to the Opponent
-#define SELF_ABBEY_ADD              10  // points to add if the tile is adding points for the agent via an abbey
-#define OTHER_ABBEY_SUB             10  // points to subtract if the tile is subtracting points for the player via an abbey
-#define DISINCENTIVIZE_NEW_STRUCT   10  // diviser for placing a new structure when the agent has no meeples left
-// Others Game Const
-#define TimeBeforeEventLogDisapear  6;
-#define Tile_texture_size 64
 
 short secret  = 0;
-uint N_CARDS = 72;
+uint AI_frame_wait = 0;
 
 typedef tile*** grid;
 
 uint get_line_number(char* filename) { // gets the number of non empty lines in file
-    FILE* f = fopen(filename, "r");
-    if (!f) {
+    FILE* fp = fopen(filename, "r");
+    if (!fp) {
         perror("Error while opening file");
         exit(1);
     }
     uint n = 0;
-    char c;
-    while ((c = fgetc(f)) != EOF) {
-        if (c == '\n') {
-            if (feof(f))
-                break;
+    char str[100];
+
+    while (!feof(fp)) {
+        if (fscanf(fp, "%[^\n]%*c", str) == 1) {
             n++;
         }
     }
-    fclose(f);
-    return n+1;
-
+    fclose(fp);
+    return n;
 }
 
 grid Grid() {
@@ -124,8 +92,9 @@ tile* Tile()
 
 void free_grid(grid g)
 {
-    for(int i = 0; i<N_CARDS*2; i++)
+    for(int i = 0; i < N_CARDS*2; i++)
         free(g[i]);
+    
     free(g);
 }
 
@@ -138,6 +107,10 @@ void lowercase(char* str)
 tile** readcsv(char* filename)
 {
     tile **deck = malloc(sizeof(tile *) * N_CARDS);
+    if (!deck) {
+        perror("Error while allocating deck");
+        exit(1);
+    }
     for (int i = 0; i <= N_CARDS; i++)
         deck[i] = Tile();
 
@@ -155,9 +128,16 @@ tile** readcsv(char* filename)
     }
 
     while (!feof(fp)) {
+        if (j == N_CARDS) {
+            break;
+        }
 
-        fscanf(fp, "%[^,\n]%*c", str);
-        
+        if (fscanf(fp, "%[^,\n]%*c", str) != 1) {
+            fprintf(stderr, "Error while reading csv tile list file!\n");
+            exit(1);
+        }
+
+
 
         lowercase(str); // convert to lowercase
 
@@ -201,11 +181,13 @@ void free_deck(tile** deck)
     if(deck == NULL)
         return;
 
-    for (int i = 0; i < N_CARDS; i++)
+    for (int i = 0; i <= N_CARDS; i++)
     {
         if(deck[i] != NULL)
             free(deck[i]);
     }
+
+    // free(*deck);
 }
 
 joueur* Joueur(uint id)
@@ -637,9 +619,9 @@ grid gen_rand_grid(tile *** pdeck)
             randid = rand()%csize;
 
             grid[coo[randid].y][coo[randid].x] = deck[randi];
-            
-            free(coo);
         }
+        
+        free(coo);
     }
 
     // free_deck(deck);
@@ -647,133 +629,7 @@ grid gen_rand_grid(tile *** pdeck)
     return grid;
 }
 
-typedef struct Texture_Tiles
-{
-    SDL_Texture
-                *abbey,                // 0 
-                *blazon,               // 1 
-                *prairies,             // 2 
-                *roads,                // 3 
-                *town,                 // 4 
-                *city,                 // 5 
-                *roads_perpendicular,  // 6 
-                *wall,                 // 7
-                *wall_gate,            // 8
-                *wall_diagonal_left,   // 9
-                *wall_diagonal_right,  // 10
-                *alt_wall,             // 11
-                *patch_wall,           // 12
-                *alt_wall_gate,        // 13
-                *roads_intersection,   // 14
-                *blazon_castle,        // 15 
-                *p1,                   // 16
-                *p2,                   // 17
-                *p3,                   // 18
-                *p4,                   // 19
-                *p5,                   // 20
-                *p_select,             // 21
-                *p_highlight,          // 22
-                *tempmark,             // 23
-                *tempmark_highlight,   // 24
-                *empty;                // 25
-} Texture_Tiles;
 
-typedef struct Texture_MainMenu
-{
-    SDL_Texture
-                *background,
-                *PlayerNumb,
-                *BotNumb;
-} Texture_MainMenu;
-
-typedef struct Texture_UI
-{
-    SDL_Texture
-                *PlayersInfo,       
-                *PlayersTurn,     
-                *Player1_Meeples,   
-                *Player2_Meeples,   
-                *Player3_Meeples,     
-                *Player4_Meeples,
-                *Player5_Meeples,
-                *Player1_Points,
-                *Player2_Points,
-                *Player3_Points,
-                *Player4_Points,
-                *Player5_Points,
-                *no_position,
-                *win_message,
-                *cat;
-} Texture_UI;
-
-typedef struct EventLog
-{
-    SDL_Texture *TextureText, *TextureNumb;
-
-    uint Time_On_Screen,
-         EventID,
-         playerID,
-         score,
-         meeple;
-
-    struct EventLog *next;
-} EventLog;
-
-typedef struct Game_Sounds
-{
-    Mix_Music *BackgroundMusic;
-    Mix_Chunk *place_tile,
-              *place_meeple,
-              *end_game,
-              *complete_struct,
-              *main_menu_numb;
-} Game_Sounds;
-
-typedef struct Render_variables
-{
-    uint FPS_Lock;
-    float FrameTime;
-    SDL_Renderer *renderer;
-    Texture_Tiles Texture_Tiles;
-    Texture_MainMenu Texture_MainMenu;
-    Texture_UI Texture_UI;
-    TTF_Font *font;
-    int WIN_w;
-    int WIN_h;
-    int TAR_w;
-    int TAR_h;
-    int scale;
-
-    Game_Sounds Game_Sounds;
-} RenderVar;
-
-typedef struct Event_variables
-{
-    SDL_Event event;
-    SDL_bool  quit;
-    Uint32    WinID;
-    int max_zoom,
-        min_zoom,
-        zoom_val,
-        key_move,
-        new_scale,
-        i_TileHL,
-        j_TileHL,
-        player_number,
-        bot_number,
-        player_turn,
-        current_tile,
-        GameState;
-    
-    EventLog *EventLog;
-
-    joueur* player_list[5];
-    tile**  deck;
-
-    bool
-        MainMenu_NumbSelected;
-
-} EventVar;
 
 void sdlCustom_FindPlayerColor(SDL_Color *color, uint playerID)
 {
@@ -871,6 +727,9 @@ void sdlCustom_LoadMainMenuTextures(SDL_Renderer* renderer, Texture_MainMenu *T)
 
 void sdlCustom_LoadWinMessageTexture(RenderVar *RV, uint playerID)
 {
+    if(RV->Texture_UI.win_message != NULL)
+        SDL_DestroyTexture(RV->Texture_UI.win_message);
+
     SDL_Color color = {255, 255, 255, 255};
     sdlCustom_FindPlayerColor(&color, playerID);
     char str1[128] = "Player . win the game!";
@@ -1036,13 +895,13 @@ void sdlCustom_EventLog_ADD(RenderVar *RV, EventLog **EL, uint EventID, uint pla
     NewEL->playerID = playerID;
     NewEL->score = score;
     NewEL->next = *EL;
-    NewEL->Time_On_Screen = RV->FPS_Lock*TimeBeforeEventLogDisapear;
+    NewEL->Time_On_Screen = RV->FPS_Lock*(TimeBeforeEventLogDisapear/1000);
     NewEL->meeple = meeple;
 
     sdlCustom_LoadEventLogTexture(RV, NewEL);
 
     if(*EL != NULL)
-        (*EL)->Time_On_Screen += (RV->FPS_Lock/2)*TimeBeforeEventLogDisapear;
+        (*EL)->Time_On_Screen += (RV->FPS_Lock/2)*(TimeBeforeEventLogDisapear/1000);
 
     *EL = NewEL;
 }
@@ -1772,6 +1631,14 @@ void sdlCustom_Game_Event(RenderVar *RV, EventVar *EV, grid grid)
 
 void sdlCustom_LoadPlayerBotsNumbers(RenderVar *RV, EventVar *EV)
 {
+    if(RV->Texture_MainMenu.PlayerNumb != NULL) {
+        SDL_DestroyTexture(RV->Texture_MainMenu.PlayerNumb);
+    }
+    if(RV->Texture_MainMenu.BotNumb != NULL) {
+        SDL_DestroyTexture(RV->Texture_MainMenu.BotNumb);
+    }
+
+
     char PN[2] = "0";
     char BN[2] = "0";
     
@@ -1856,7 +1723,7 @@ void sdlCustom_MainMenu_Event(RenderVar *RV, EventVar *EV)
             switch((EV->event).key.keysym.sym)
             {
                 case SDLK_ESCAPE :
-                    EV->quit = SDL_TRUE;
+                    EV->GameState = GameState_QUIT;
                     break;
 
                 case SDLK_RETURN :
@@ -1913,7 +1780,11 @@ void sdlCustom_MainMenu_Event(RenderVar *RV, EventVar *EV)
 
                 case SDLK_KP_MINUS :
                 case SDLK_m :
-                    Mix_VolumeMusic(Mix_VolumeMusic(-1)-10);
+                    if(Mix_VolumeMusic(-1)-10 <= 0)
+                        Mix_VolumeMusic(0);
+                    else
+                        Mix_VolumeMusic(Mix_VolumeMusic(-1)-10);
+                    break;
                     break;
                 
                 default :
@@ -1922,22 +1793,6 @@ void sdlCustom_MainMenu_Event(RenderVar *RV, EventVar *EV)
         }
     }
 
-}
-
-void sdlCustom_RenderString(RenderVar *RV, const char* message)
-{
-    SDL_Color color = { 255, 255, 255 };
-    SDL_Surface *surface = TTF_RenderUTF8_Solid(RV->font, message, color);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(RV->renderer, surface);
-
-    int w, h;
-    SDL_QueryTexture(texture, NULL, NULL, &w, &h);
-
-    SDL_Rect dst = {RV->WIN_w/2, 100, w, h};
-    SDL_RenderCopy(RV->renderer, texture, NULL, &dst);
-
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
 }
 
 void sdlCustom_RenderEventLog(RenderVar *RV, EventLog *EL)
@@ -2172,7 +2027,8 @@ bool sdlCustom_init()
     return 1;
 }
 
-int **sdlCustom_AIturn_fitness(grid grid, coord* coord_list, int size, tile* t, joueur *Agent) {
+int **sdlCustom_AIturn_fitness(grid grid, coord* coord_list, int size, tile* t, joueur *Agent)
+{
     int **score = malloc(sizeof(int*)*size);
     if (score == NULL) {
         perror("error while malloc score in fitness");
@@ -2502,7 +2358,7 @@ int main(int argc, char *argv[])
 
     SDL_SetWindowTitle(window, "CARCASUM - Tile Game");
 
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    // SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     sdlCustom_ColorBackground(renderer, 100, 100, 100);
     SDL_RenderPresent(renderer);
@@ -2510,7 +2366,6 @@ int main(int argc, char *argv[])
     // Setting up Render Variables
 /////////////////////////////////////////////////////////////////////////////////////////////
     RenderVar RV;
-    // sdlCustom_LoadMainMenuTextures(renderer, &RV.Texture_MainMenu);
     RV.FPS_Lock  = 144;
     RV.FrameTime = 1.0/(float)(RV.FPS_Lock);
     RV.renderer = renderer;
@@ -2528,12 +2383,9 @@ int main(int argc, char *argv[])
     // Setting up Event Variables
 /////////////////////////////////////////////////////////////////////////////////////////////
     EventVar EV;
-    EV.quit  = SDL_FALSE;
-    EV.WinID = SDL_GetWindowID(window);
     EV.max_zoom  = 8000;
     EV.min_zoom  = 1000;
     EV.zoom_val  = 150;
-    EV.key_move  = 1;
     EV.new_scale = 0;
     EV.i_TileHL  = 0;
     EV.j_TileHL  = 0;
@@ -2550,12 +2402,11 @@ int main(int argc, char *argv[])
     int timer_until_nextFrameTime;
     srand(time(NULL));
     grid grid = NULL;
-    // grid grid = MainMenu_GenerateBackgroundGrid(&EV.deck);
-    // grid grid = gen_rand_game(&EV.deck);
-    // grid grid = Grid();
 
     // Load Texture for the MainMenu
     sdlCustom_LoadTilesTextures(renderer, &RV.Texture_Tiles);
+    RV.Texture_MainMenu.BotNumb = NULL;
+    RV.Texture_MainMenu.PlayerNumb = NULL;
     sdlCustom_LoadMainMenuTextures(renderer, &RV.Texture_MainMenu);
     sdlCustom_LoadPlayerBotsNumbers(&RV, &EV);
 
@@ -2569,19 +2420,22 @@ int main(int argc, char *argv[])
     // Setting up the number of tile
     N_CARDS = get_line_number("tuiles_base_simplifiees.csv");
 
-    while(!EV.quit)
+    while(EV.GameState != GameState_QUIT)
     {
+        // Start te main loop timer
         Uint64 start = SDL_GetPerformanceCounter();
 
         if(EV.GameState == GameState_MAIN_MENU_INIT)
             sdlCustom_MainMenu_init(&RV, &EV, &grid);
 
+        // State switching, input event and rendering for the main menu
         if(EV.GameState == GameState_MAIN_MENU)
         {
             sdlCustom_MainMenu_Event(&RV, &EV);
             sdlCustom_RenderMainMenuFrame(&RV, &EV, grid);
         }
 
+        // State switching, input event and rendering for the game
         if(EV.GameState >= GameState_START)
         {
             if(EV.GameState == GameState_START)
@@ -2631,13 +2485,33 @@ int main(int argc, char *argv[])
 
             if(EV.GameState == GameState_AI_TURN)
             {
-                sdlCustom_AIturn_HandleAgent(&RV,  &EV, grid);
 
-                EV.player_turn = EV.player_turn%EV.player_number +1;
-                EV.deck[EV.current_tile] = NULL;
-                (EV.current_tile) ++;
+                if(AI_frame_wait == 0)
+                {
+                    sdlCustom_AIturn_HandleAgent(&RV,  &EV, grid);
+                    AI_frame_wait = round(RV.FPS_Lock*2.5);
 
-                EV.GameState = GameState_CHECK_TILE;
+                    EV.deck[EV.current_tile]->istemp = 1;
+
+                    for(int i = 0; i < N_CARDS*2; i++)
+                        for(int j = 0; j < N_CARDS*2; j++)
+                            if(EV.deck[EV.current_tile] == grid[i][j])
+                            {
+                                EV.i_TileHL = i;
+                                EV.j_TileHL = j;
+                            }
+                }
+
+                if(AI_frame_wait == 1)
+                {
+                    EV.deck[EV.current_tile]->istemp = 0;
+                    EV.player_turn = EV.player_turn%EV.player_number +1;
+                    EV.deck[EV.current_tile] = NULL;
+                    (EV.current_tile) ++;
+                    EV.GameState = GameState_CHECK_TILE;
+                }
+
+                AI_frame_wait --;
             }
 
             sdlCustom_Game_Event(&RV, &EV, grid); 
@@ -2675,9 +2549,11 @@ int main(int argc, char *argv[])
 
         SDL_RenderPresent(RV.renderer);
         
+        // end the main loop timer
         Uint64 end = SDL_GetPerformanceCounter();
+
+        // compute the remaining time to wait until the next frame
         float elapsedMS = (end-start)/(float)SDL_GetPerformanceFrequency()*1000.f;
-        
         timer_until_nextFrameTime = floor(RV.FrameTime*1000.f - elapsedMS);
         timer_until_nextFrameTime = timer_until_nextFrameTime < 0 ? 0 : timer_until_nextFrameTime;
         
@@ -2691,8 +2567,6 @@ int main(int argc, char *argv[])
     free_grid(grid);
     free_deck(EV.deck);
     sdlCustom_EventLog_free_All(&EV.EventLog);
-
-/////////////////////////////////////////////////////////////////////////////////////////////
 
     statut = EXIT_SUCCESS;
 Quit:
