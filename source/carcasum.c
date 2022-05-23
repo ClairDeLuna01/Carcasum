@@ -172,6 +172,8 @@ tile** readcsv(char* filename)
 
     fclose(fp);
 
+    
+
     deck_shuffle(deck);
     return deck;
 }
@@ -290,7 +292,7 @@ coord* get_all_available_positions(grid grid, uint* size)
     return coo;
 }
 
-coord* get_all_possible_possitions(grid g, tile* t, uint* size)
+coord* get_all_possible_positions(grid g, tile* t, uint* size)
 {
     // returns all the positions for the tile t that are both available and valid
     // the size of the array is returned in size
@@ -437,7 +439,8 @@ bool is_struct_unoccupied(grid G, int i, int j, uint* score, char c, int side, b
     }
 
     for(int k = 0; k < 5; k ++)
-        if(( (G[i][j]->sides[4] == c && G[i][j]->sides[k] == c) || k == side) && G[i][j]->meeple[k] > 0 && G[i][j]->meeple[k] < 6)
+        if(((G[i][j]->sides[4] == c && G[i][j]->sides[k] == c) || k == side) && G[i][j]->meeple[k] > 0 
+            && G[i][j]->meeple[k] < 6)
         {
             if(playerID != NULL && score != NULL)
                 playerID[G[i][j]->meeple[k]-1] = 1;
@@ -594,8 +597,8 @@ bool is_abbey_complete(grid G, int i, int j)
 
 grid gen_rand_grid(tile *** pdeck)
 {
+    *pdeck = readcsv("tuiles_base_simplifiees.csv");
     tile** deck = *pdeck;
-    deck = readcsv("tuiles_base_simplifiees.csv");
     grid grid = Grid();
     coord *coo = NULL;
 
@@ -604,15 +607,22 @@ grid gen_rand_grid(tile *** pdeck)
          randid = 0,
          randi;
 
+    for(int i = 0; i < N_CARDS; i++)
+    {
+        randi = rand()%3;
+        for(int j = 0; j < randi; j++)
+            rotate_tile_clockwise(deck[i]);
+    }
+
     grid[N_CARDS][N_CARDS] = deck[0];
 
-    for(; i < 175; i++)
+    for(; i < 600; i++)
     {
         randi = rand()%(N_CARDS-1);
 
         csize = 0;
         
-        coo = get_all_possible_possitions(grid, deck[randi], &csize);
+        coo = get_all_possible_positions(grid, deck[randi], &csize);
 
         if(csize > 0)
         {
@@ -624,12 +634,60 @@ grid gen_rand_grid(tile *** pdeck)
         free(coo);
     }
 
-    // free_deck(deck);
+    for(int i = 1; i < round(N_CARDS*1.20); i++)
+        for(int j = 1; j < round(N_CARDS*1.20); j++)
+        {
+            if(grid[i][j] == NULL && (grid[i-1][j] != NULL || grid[i][j-1] != NULL || grid[i+1][j] != NULL || grid[i][j+1] != NULL ))
+            {
+                grid[i][j] = Tile();
 
+                if(grid[i-1][j] != NULL)
+                    grid[i][j]->sides[0] = grid[i-1][j]->sides[2];
+                else 
+                    grid[i][j]->sides[0] = 'p';
+                
+                if(grid[i+1][j] != NULL)
+                    grid[i][j]->sides[2] = grid[i+1][j]->sides[0];
+                else 
+                    grid[i][j]->sides[5] = 'p';
+
+                if(grid[i][j-1] != NULL)
+                    grid[i][j]->sides[3] = grid[i][j-1]->sides[1];
+                else 
+                    grid[i][j]->sides[3] = 'p';
+
+                if(grid[i][j+1] != NULL)
+                    grid[i][j]->sides[1] = grid[i][j+1]->sides[3];
+                else 
+                    grid[i][j]->sides[1] = 'p';
+
+                if(grid[i][j]->sides[1] == 'V' || grid[i][j]->sides[0] == 'V' || grid[i][j]->sides[2] == 'V' || grid[i][j]->sides[3] == 'V')
+                    grid[i][j]->sides[4] = 'V';
+                else if(grid[i][j]->sides[0] != 'r' && grid[i][j]->sides[1] != 'r' && grid[i][j]->sides[2] != 'r' && grid[i][j]->sides[3] != 'r')
+                    grid[i][j]->sides[4] = 'p';
+                else
+                    grid[i][j]->sides[4] = 'v';
+            }
+        }
     return grid;
 }
 
+void free_main_menu_grid(grid g, tile **deck)
+{
+    for(int i = 0; i < N_CARDS*2; i++)
+        for(int j = 0; j < N_CARDS*2; j++)
+            if(g[i][j] != NULL)
+            {
+                bool is_outside_deck = 1;
 
+                for(int k = 0; k < N_CARDS; k++)
+                    if(g[i][j] == deck[k])
+                        is_outside_deck = 0;
+                
+                if(is_outside_deck == 1)
+                    free(g[i][j]);
+            }
+}
 
 void sdlCustom_FindPlayerColor(SDL_Color *color, uint playerID)
 {
@@ -1337,7 +1395,7 @@ void sdlCustom_CheckStruct(RenderVar *RV, EventVar *EV, grid grid)
                             sdlCustom_EventLog_ADD(RV, &(EV->EventLog), GameEvent_Complete_roads, l+1, score, winners[l]);
 
                         if(grid[EV->i_TileHL][EV->j_TileHL]->sides[k] == 'V')
-                           sdlCustom_EventLog_ADD(RV, &(EV->EventLog), GameEvent_Complete_city, l+1, score, winners[l]);
+                            sdlCustom_EventLog_ADD(RV, &(EV->EventLog), GameEvent_Complete_city, l+1, score, winners[l]);
 
                         EV->player_list[l]->points += score;
                     }
@@ -2069,30 +2127,48 @@ int **sdlCustom_AIturn_fitness(grid grid, coord* coord_list, int size, tile* t, 
                     is_struct_unoccupied(grid, c.y, c.x, &scoretmp, t->sides[j], j, playerIDtmp, true, false);
                     clear_tmpmark(grid);
 
-                    if (playerIDtmp[Agent->id-1] == true) {
+                    if (playerIDtmp[Agent->id-1] == false) {
                         disincentivize_new_struct = DISINCENTIVIZE_NEW_STRUCT;
                     }
                 }
                 uint n = 0;
                 // if placing a tile here completes a structure add points relative to the points the structure gives
                 if (is_struct_closed(grid, c.y, c.x, &n, t->sides[j], j)) {
+                    //printf("closes structure at %d %d and gives %u points\n", c.y, c.x, n);
                     clear_tmpmark(grid);
                     bool playerIDtmp[5] = {false};
                     uint scoretmp = 0;
                     is_struct_unoccupied(grid, c.y, c.x, &scoretmp, t->sides[j], j, playerIDtmp, true, false);
                     clear_tmpmark(grid);
 
+                    
+
                     for (int k = 0; k < 5; k++) {
                         if (playerIDtmp[k] == true) {
-                            if (k == Agent->id) {
-                                int pts = scoretmp * SELF_STRUCT_COMPLETE_MULT / disincentivize_new_struct;
+                            if (k == (Agent->id-1)) {
+                                int pts;
+                                if ((t->sides[j] == 'V') && (scoretmp <= SELF_CITY_MIN_POINTS)) {
+                                    pts = scoretmp / disincentivize_new_struct;
+                                }
+                                else {
+                                    pts = scoretmp * SELF_STRUCT_COMPLETE_MULT / disincentivize_new_struct;
+                                }
                                 score[i][0] += pts;
+                                //printf("the agent gets %d points for this tile\n", pts);
                                 if (meeple_placed) {
                                     meeple_score_tmp += pts;
                                 }
-                            } else {
-                                int pts = scoretmp * OPP_STRUCT_COMPLETE_MULT / disincentivize_new_struct;
+                            } 
+                            else {
+                                int pts;
+                                if ((t->sides[j] == 'V') && (scoretmp <= SELF_CITY_MIN_POINTS)) {
+                                    pts = scoretmp / disincentivize_new_struct;
+                                }
+                                else {
+                                    pts = scoretmp * OPP_STRUCT_COMPLETE_MULT / disincentivize_new_struct;
+                                }
                                 score[i][0] -= pts;
+                                //printf("the agent loses %d points for this tile since player %d owns it\n", pts, k+1);
                                 if (meeple_placed) {
                                     meeple_score_tmp -= pts;
                                 }
@@ -2106,19 +2182,22 @@ int **sdlCustom_AIturn_fitness(grid grid, coord* coord_list, int size, tile* t, 
                     bool playerIDtmp[5] = {false};
                     uint scoretmp = 0;
                     is_struct_unoccupied(grid, c.y, c.x, &scoretmp, t->sides[j], j, playerIDtmp, false, false);
+                    //printf("doesnt complete structure at %d %d and gives %u points\n", c.y, c.x, scoretmp);
                     clear_tmpmark(grid);
 
                     for (int k = 0; k < 5; k++) {
                         if (playerIDtmp[k] != false) {
-                            if (k == Agent->id) {
+                            if (k == (Agent->id-1)) {
                                 int pts = scoretmp * SELF_STRUCT_INCOMPLETE_MULT / disincentivize_new_struct;
                                 score[i][0] += pts;
+                                //printf("the agent gets %d points for this tile\n", pts);
                                 if (meeple_placed) {
                                     meeple_score_tmp += pts;
                                 }
                             } else {
                                 int pts = scoretmp * OPP_STRUCT_INCOMPLETE_MULT / disincentivize_new_struct;
                                 score[i][0] -= pts;
+                                //printf("the agent loses %d points for this tile since player %d owns it\n", pts, k+1);
                                 if (meeple_placed) {
                                     meeple_score_tmp += pts;
                                 }
@@ -2197,19 +2276,19 @@ void sdlCustom_AIturn_HandleAgent(RenderVar *RV, EventVar *EV, grid grid)
     uint v3 = 0;
     uint v4 = 0;
 
-    coord* c1 = get_all_possible_possitions(grid, new_tile, &v1);
+    coord* c1 = get_all_possible_positions(grid, new_tile, &v1);
     int ** f1 = sdlCustom_AIturn_fitness(grid, c1, v1, new_tile, EV->player_list[EV->player_turn-1]);
    
     rotate_tile_clockwise(new_tile);
-    coord* c2 = get_all_possible_possitions(grid, new_tile, &v2);
+    coord* c2 = get_all_possible_positions(grid, new_tile, &v2);
     int ** f2 = sdlCustom_AIturn_fitness(grid, c2, v2, new_tile, EV->player_list[EV->player_turn-1]);
 
     rotate_tile_clockwise(new_tile);
-    coord* c3 = get_all_possible_possitions(grid, new_tile, &v3);
+    coord* c3 = get_all_possible_positions(grid, new_tile, &v3);
     int ** f3 = sdlCustom_AIturn_fitness(grid, c3, v3, new_tile, EV->player_list[EV->player_turn-1]);
 
     rotate_tile_clockwise(new_tile);
-    coord* c4 = get_all_possible_possitions(grid, new_tile, &v4);
+    coord* c4 = get_all_possible_positions(grid, new_tile, &v4);
     int ** f4 = sdlCustom_AIturn_fitness(grid, c4, v4, new_tile, EV->player_list[EV->player_turn-1]);
 
     // get highest score and corresponding coordinates from all 4 rotations
@@ -2218,7 +2297,9 @@ void sdlCustom_AIturn_HandleAgent(RenderVar *RV, EventVar *EV, grid grid)
     int index = 1;
 
     for (int i = 0; i < v1; i++) {
+        //printf("f1[%d][0] = %d\n", i, f1[i][0]);
         if (f1[i][0] > max[0]) {
+            //printf("this is the new max\n");
             max[0] = f1[i][0];
             max[1] = f1[i][1];
             max[2] = f1[i][2];
@@ -2227,7 +2308,9 @@ void sdlCustom_AIturn_HandleAgent(RenderVar *RV, EventVar *EV, grid grid)
     }
 
     for (int i = 0; i < v2; i++) {
+        //printf("f2[%d][0] = %d\n", i, f2[i][0]);
         if (f2[i][0] > max[0]) {
+            //printf("this is the new max\n");
             max[0] = f2[i][0];
             max[1] = f2[i][1];
             max[2] = f2[i][2];
@@ -2237,7 +2320,9 @@ void sdlCustom_AIturn_HandleAgent(RenderVar *RV, EventVar *EV, grid grid)
     }
 
     for (int i = 0; i < v3; i++) {
+        //printf("f3[%d][0] = %d\n", i, f3[i][0]);
         if (f3[i][0] > max[0]) {
+            //printf("this is the new max\n");
             max[0] = f3[i][0];
             max[1] = f3[i][1];
             max[2] = f3[i][2];
@@ -2247,7 +2332,9 @@ void sdlCustom_AIturn_HandleAgent(RenderVar *RV, EventVar *EV, grid grid)
     }
 
     for (int i = 0; i < v4; i++) {
+        //printf("f4[%d][0] = %d\n", i, f4[i][0]);
         if (f4[i][0] > max[0]) {
+            //printf("this is the new max\n");
             max[0] = f4[i][0];
             max[1] = f4[i][1];
             max[2] = f4[i][2];
@@ -2277,7 +2364,7 @@ void sdlCustom_AIturn_HandleAgent(RenderVar *RV, EventVar *EV, grid grid)
 
     // place meeple if possible
     if ((max[1] != -1) && EV->player_list[EV->player_turn-1]->meeples > 0) {
-        if (max[2] > 0) {
+        if (max[2] > MINIMUM_MEEPLE_SCORE_FOR_PLACEMENT) {
             grid[c.y][c.x]->meeple[max[1]] = EV->player_turn;
             EV->player_list[EV->player_turn-1]->meeples--;
             sdlCustom_LoadMeepleCounterTexture(RV, EV, EV->player_turn);
@@ -2358,7 +2445,7 @@ int main(int argc, char *argv[])
 
     SDL_SetWindowTitle(window, "CARCASUM - Tile Game");
 
-    // SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     sdlCustom_ColorBackground(renderer, 100, 100, 100);
     SDL_RenderPresent(renderer);
@@ -2405,9 +2492,9 @@ int main(int argc, char *argv[])
 
     // Load Texture for the MainMenu
     sdlCustom_LoadTilesTextures(renderer, &RV.Texture_Tiles);
+    sdlCustom_LoadMainMenuTextures(renderer, &RV.Texture_MainMenu);
     RV.Texture_MainMenu.BotNumb = NULL;
     RV.Texture_MainMenu.PlayerNumb = NULL;
-    sdlCustom_LoadMainMenuTextures(renderer, &RV.Texture_MainMenu);
     sdlCustom_LoadPlayerBotsNumbers(&RV, &EV);
 
     // Load sounds and music
@@ -2419,6 +2506,8 @@ int main(int argc, char *argv[])
 
     // Setting up the number of tile
     N_CARDS = get_line_number("tuiles_base_simplifiees.csv");
+
+
 
     while(EV.GameState != GameState_QUIT)
     {
@@ -2441,6 +2530,7 @@ int main(int argc, char *argv[])
             if(EV.GameState == GameState_START)
             {
                 sdlCustom_LoadTextureUI(renderer, &RV.Texture_UI);
+                free_main_menu_grid(grid, EV.deck);
                 free_grid(grid);
                 free_deck(EV.deck);
                 EV.deck = readcsv("tuiles_base_simplifiees.csv");

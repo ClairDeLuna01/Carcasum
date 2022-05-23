@@ -31,13 +31,15 @@
 #define GameEvent_MeepleBack_city           5                           // event triggered when a player completes a road without winning any points
 #define GameEvent_Points_IncompleteStruct   6                           // event triggered when a player wins points from all his incomplete structures
 // AI               
-#define SELF_STRUCT_COMPLETE_MULT   30                                  // multiplier for completing structures belonging to the Agent
-#define SELF_STRUCT_INCOMPLETE_MULT 15                                  // multiplier for incomplete structures belonging to the Agent
-#define OPP_STRUCT_COMPLETE_MULT    8                                   // multiplier for completing structures belonging to the Opponent
-#define OPP_STRUCT_INCOMPLETE_MULT  4                                   // multiplier for incomplete structures belonging to the Opponent
-#define SELF_ABBEY_ADD              10                                  // points to add if the tile is adding points for the agent via an abbey
-#define OTHER_ABBEY_SUB             10                                  // points to subtract if the tile is subtracting points for the player via an abbey
-#define DISINCENTIVIZE_NEW_STRUCT   10                                  // diviser for placing a new structure when the agent has no meeples left
+#define SELF_STRUCT_COMPLETE_MULT           12                          // multiplier for completing structures belonging to the Agent
+#define SELF_STRUCT_INCOMPLETE_MULT         8                           // multiplier for incomplete structures belonging to the Agent
+#define SELF_CITY_MIN_POINTS                6                           // minimum completion points of a city belonging to the Agent before the multiplier for completing it is applied
+#define OPP_STRUCT_COMPLETE_MULT            8                           // multiplier for completing structures belonging to the Opponent
+#define OPP_STRUCT_INCOMPLETE_MULT          4                           // multiplier for incomplete structures belonging to the Opponent
+#define SELF_ABBEY_ADD                      16                          // points to add if the tile is adding points for the agent via an abbey
+#define OTHER_ABBEY_SUB                     0                           // points to subtract if the tile is subtracting points for the player via an abbey
+#define DISINCENTIVIZE_NEW_STRUCT           20                          // diviser for placing a new structure when the agent has no meeples left
+#define MINIMUM_MEEPLE_SCORE_FOR_PLACEMENT  15                          // minimum score for placing a meeple
 // Others Game Const                
 #define TimeBeforeEventLogDisapear  6000                                   // time in milliseconds before an event log disapears
 #define Tile_texture_size 64                                            // height (and width since tiles are square) in pixels of the texture of a tile (ressources/tile)
@@ -252,7 +254,7 @@ uint N_CARDS = 72;                                                      // the t
 
         // alloc and return a player struct that is designated as a bot
         joueur* Bot(uint id);                                       
-
+        
 
     ////// Functions to rotate tile         
 
@@ -275,7 +277,7 @@ uint N_CARDS = 72;                                                      // the t
                                             uint* size);            
 
         // return all the possible positions on the grid (ie. all empty spaces where you can place the tile)
-        coord* get_all_possible_possitions(grid g,                  
+        coord* get_all_possible_positions(grid g,                  
                                            tile* t,             
                                            uint* size);         
 
@@ -333,7 +335,7 @@ uint N_CARDS = 72;                                                      // the t
 
     grid gen_rand_grid(tile *** pdeck);                                 // generate a random grid with the given deck
 
-
+    void free_main_menu_grid(grid g, tile **deck);                      // free the grid used in the main menu
 
 //////// Custom Functions Using SDL
 
