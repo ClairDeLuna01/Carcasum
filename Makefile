@@ -11,7 +11,7 @@ default: source/carcasum.c source/carcasum.h
 
 	
 install: source/carcasum.c source/carcasum.h
-	$(CC) -g -O3 $? -o $(EXEC) -lm $(CFLAGS) 
+	$(CC) -O3 $? -o $(EXEC) -lm $(CFLAGS) 
 
 windows: source/carcasum.c source/carcasum.h
 	$(CC) -std=c17 -g $? icon.res -o $(EXEC).exe -lm -Wall $(WINFLAGS) $(CFLAGS) 
