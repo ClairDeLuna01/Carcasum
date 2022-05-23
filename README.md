@@ -68,6 +68,8 @@ The requirements to build and play this game are:
 
 To install these requirements you can run this command:
 
+    sudo apt update
+    sudo apt upgrade
     sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
 Note: if you are using a linux distro that is not Ubuntu or Debian, you may need to install these libraries using your distro's package manager.
