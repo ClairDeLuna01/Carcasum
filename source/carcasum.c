@@ -649,7 +649,7 @@ grid gen_rand_grid(tile *** pdeck)
                 if(grid[i+1][j] != NULL)
                     grid[i][j]->sides[2] = grid[i+1][j]->sides[0];
                 else 
-                    grid[i][j]->sides[5] = 'p';
+                    grid[i][j]->sides[4] = 'p';
 
                 if(grid[i][j-1] != NULL)
                     grid[i][j]->sides[3] = grid[i][j-1]->sides[1];
