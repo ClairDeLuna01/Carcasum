@@ -248,7 +248,7 @@ Game sounds:
 
 ##### Game core
 
-    Arthur Bossu
+    Luna Bossu
 
     Arthur Chateauneuf
 
@@ -260,7 +260,7 @@ Game sounds:
 
 ##### AI code
 
-    Arthur Bossu
+    Luna Bossu
 
 
 
@@ -472,7 +472,7 @@ Sons de jeu:
 
 ##### Partie basique (systemes du jeu)
 
-    Arthur Bossu
+    Luna Bossu
 
     Arthur Chateauneuf
 
@@ -484,4 +484,4 @@ Sons de jeu:
 
 ##### IA
 
-    Arthur Bossu
+    Luna Bossu
